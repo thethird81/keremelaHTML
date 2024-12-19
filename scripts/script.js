@@ -18,9 +18,16 @@ var sidebar = document.querySelector(".sidebar");
 var container = document.querySelector(".container");
 
 menuIcon.onclick = function(){
-    sidebar.classList.toggle("small-sidebar");
-    container.classList.toggle("large-container");
+    if (document.title === "KeremelaKIDS") {
+        sidebar.classList.toggle("small-sidebar");
+        container.classList.toggle("large-container");
+    } else {
+        renderSidebar();
+        sidebar.classList.toggle("small-sidebar");
+    }
+
 }
+
 
 // Sidebar topics
 var sideBarList = [
@@ -40,18 +47,12 @@ var sideBarList = [
     { icon: "fa-solid fa-flag", topic: "Ye Ethiopia Lijoch" }
 ];
 
-// Render the sidebar dynamically
-var shortcutLinks = document.querySelector(".shortcut-links");
-sideBarList.forEach(function(item) {
-    var link = document.createElement("a");
-    link.innerHTML = "<i class='" + item.icon + "'></i><p>" + item.topic + "</p>";
-    link.addEventListener("click", function() {
-        fetchVideosFromFirebase(item.topic);
-    });
-    shortcutLinks.appendChild(link);
-});
-// Select a random topic and fetch videos on page load
-window.onload = function () {
+
+
+if (document.title === "KeremelaKIDS") {
+    renderSidebar();
+    // Select a random topic and fetch videos on page load
+  window.onload = function () {
     var savedTopic = localStorage.getItem("selectedTopic");
     var selectedTopic;
 
@@ -67,7 +68,23 @@ window.onload = function () {
     fetchVideosFromFirebase(selectedTopic.topic);
     highlightSelectedTopic(selectedTopic.topic);
 };
+    console.log("JavaScript is running on the specific page.");
+} else {
+    console.log("This is not the specific page.");
+}
 
+// Render the sidebar dynamically
+function renderSidebar(){
+    var shortcutLinks = document.querySelector(".shortcut-links");
+    sideBarList.forEach(function(item) {
+        var link = document.createElement("a");
+        link.innerHTML = "<i class='" + item.icon + "'></i><p>" + item.topic + "</p>";
+        link.addEventListener("click", function() {
+            fetchVideosFromFirebase(item.topic);
+        });
+        shortcutLinks.appendChild(link);
+    });
+}
 // Fetch videos from Firebase by topic
 function fetchVideosFromFirebase(topic) {
     // Update the selected topic in localStorage
@@ -90,6 +107,8 @@ function fetchVideosFromFirebase(topic) {
             var videos = querySnapshot.docs.map(function (doc) {
                 return doc.data();
             });
+            // Save the fetched videos to localStorage
+            localStorage.setItem("videoList", JSON.stringify(videos));
             updateVideoList(videos);
         } else {
             console.log("No videos found for topic: " + topic);
