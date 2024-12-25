@@ -29,7 +29,11 @@ nav{
     width: 25px;
     margin-right: 25px;
 }
-.nav-right .user-icon{
+.nav-right span{
+
+    margin-right: 25px;
+}
+.nav-right #userIcon{
     width: 35px;
     border-radius: 50%;
     margin-right: 0;
@@ -176,64 +180,7 @@ nav{
     display: block;
     margin-bottom: 5px;
 }
-@media (max-width: 900px){
-    .menu-icon{
-        display: none;
-    }
-    .sidebar {
-        height: auto;
-        width: 100%; /* Full width */
-        position: static; /* Part of the normal flow */
-        display: flex;
-        flex-direction: row; /* Horizontal layout */
-        overflow-x: auto; /* Enable horizontal scrolling */
-        white-space: nowrap; /* Prevent wrapping of content */
-        padding: 10px 20px;
-        box-sizing: border-box; /* Include padding in width calculation */
-    }
 
-    .shortcut-links {
-        display: flex;
-        flex-direction: row; /* Align items horizontally */
-        gap: 20px; /* Add space between items */
-        width: 100%;
-    }
-
-    .shortcut-links a {
-        flex-direction: column; /* Align icon and text vertically */
-        align-items: center;
-        margin: 0;
-    }
-
-    .shortcut-links a img {
-       display: none;
-    }
-    .banner{
-        display: none;
-    }
-    .container ,.large-container{
-    padding-left: 5%;
-    padding-right: 5%
-    }
-    .nav-right img{
-        display: none;
-    }
-    .nav-right .user-icon{
-        display: block;
-        width: 30px;
-    }
-    .nav-middle .search-box input{
-     width: 100px;
-    }
-    .nav-middle .mic-icon{
-        display: none;
-    }
-    .logo{
-        width: 90px;
-    }
-
-
-}
 /*-------------------- play video page ----------------*/
 .play-container{
     padding-left: 2%;
@@ -296,6 +243,55 @@ nav{
     flex-basis: 49%;
 }
 @media (max-width:900px){
+    .menu-icon{
+        display: none;
+    }
+    .sidebar {
+        height: auto;
+        width: 100%; /* Full width */
+        position: static; /* Part of the normal flow */
+        display: flex;
+        flex-direction: row; /* Horizontal layout */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        white-space: nowrap; /* Prevent wrapping of content */
+        padding: 10px 20px;
+        box-sizing: border-box; /* Include padding in width calculation */
+    }
+
+    .shortcut-links {
+        display: flex;
+        flex-direction: row; /* Align items horizontally */
+        gap: 20px; /* Add space between items */
+        width: 100%;
+    }
+
+    .shortcut-links a {
+        flex-direction: column; /* Align icon and text vertically */
+        align-items: center;
+        margin: 0;
+    }
+
+    .shortcut-links a img {
+       display: none;
+    }
+    .banner{
+        display: none;
+    }
+    .container ,.large-container{
+    padding-left: 5%;
+    padding-right: 5%
+    }
+    .nav-right img{
+        display: none;
+    }
+    .nav-right #userIcon{
+        display: block;
+        width: 30px;
+    }
+    .logo{
+        width: 90px;
+    }
+
     .play-video{
         flex-basis: 100%;
     }
@@ -309,4 +305,32 @@ nav{
     .play-container{
         padding-left: 5%;
     }
+}
+/* Dropdown menu styles */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px; /* Adjust based on the position of your user icon */
+    right: 10px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    padding: 25px;
+    z-index: 1000;
+}
+
+.dropdown-menu button {
+    display: block;
+    padding: 10px 15px;
+    color: #5a5a5a;
+    text-decoration: none;
+    font-size: 14px;
+    background-color: #fff;
+    border: none;
+}
+
+.dropdown-menu button:hover {
+
+    color: #ed3833;
 }

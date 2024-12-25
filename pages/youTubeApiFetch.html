@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Age Group Video Fetcher</title>
+     <!-- Firebase SDK -->
+     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+</head>
+<body>
+    <h1>Select Age Group</h1>
+    <select id="ageGroup">
+        <option value="0-2">0-2</option>
+        <option value="3-4">3-4</option>
+        <option value="5-7">5-7</option>
+        <option value="8-10">8-10</option>
+        <option value="11+">11+</option>
+    </select>
+    <button id="fetchVideos">Fetch Videos</button>
+    <div id="status"></div>
+    <script src="/scripts/sidebar-list.js"></script>
+    <script src="/scripts/youTubeFetch.js"></script>
+</body>
+</html>
