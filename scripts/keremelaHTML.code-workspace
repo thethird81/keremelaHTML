@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "keremelaHTML",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"liveServer.settings.port": 5501
+	}
+}

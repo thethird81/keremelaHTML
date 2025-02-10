@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <title>Manage Questions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .stack-row {
+      display: flex;
+      gap: 16px;
+    }
+    .box {
+      background-color: skyblue;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .form-control {
+      margin-bottom: 16px;
+    }
+    .button {
+      background-color: orange;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: darkorange;
+    }
+    .textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .option {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+    }
+    .list-item {
+      background-color: azure;
+      margin: 8px 0;
+      padding: 8px;
+      cursor: pointer;
+    }
+    .list-item:hover {
+      background-color: lightblue;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+        apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
+    authDomain: "keremela-508aa.firebaseapp.com",
+    databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
+    projectId: "keremela-508aa",
+    storageBucket: "keremela-508aa.firebasestorage.app",
+    messagingSenderId: "555590069435",
+    appId: "1:555590069435:web:1296b444545a84a73c8d9e"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+
+    var Timestamp = { now: function() { return new Date(); } }; // Placeholder for Firebase Timestamp
+
+    // Placeholder function to simulate fetching data
+    function getOneSubjectQuestions(startDate, subject) {
+      return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve([
+            { id: '1', question: 'What is 2 + 2?', options: [{ id: 'A', text: '4', isCorrect: true }] }
+          ]);
+        }, 1000);
+      });
+    }
+
+    function ManageQuestions() {
+      var subjects = [
+        { id: '1', path: 'subjects/maths/quiz', name: 'Maths' },
+        { id: '2', path: 'subjects/science/quiz', name: 'Science' }
+      ];
+
+      var startDate = new Date();
+
+      var state = {
+        formData: {
+          question: '',
+          options: [
+            { id: 'A', text: '', isCorrect: false },
+            { id: 'B', text: '', isCorrect: false },
+            { id: 'C', text: '', isCorrect: false },
+            { id: 'D', text: '', isCorrect: false }
+          ],
+          createdAt: '',
+          imgUrl: '',
+          about: ''
+        },
+        selectedOptionPath: 'subjects/maths/quiz',
+        showAllQuestions: false,
+        questions: [],
+        subject: '',
+        questionId: '',
+        addImage: false
+      };
+
+      function handleSubjectChange(event) {
+        var selectedPath = event.target.value;
+        state.selectedOptionPath = selectedPath;
+        getOneSubjectQuestions(startDate, selectedPath.split('/')[1]).then(function(q) {
+          state.questions = q;
+          state.showAllQuestions = true;
+          render();
+        }).catch(function() {
+          console.log('Error fetching questions');
+        });
+
+        state.formData = {
+          question: '',
+          options: [
+            { id: 'A', text: '', isCorrect: false },
+            { id: 'B', text: '', isCorrect: false },
+            { id: 'C', text: '', isCorrect: false },
+            { id: 'D', text: '', isCorrect: false }
+          ],
+          createdAt: '',
+          imgUrl: '',
+          about: ''
+        };
+        render();
+      }
+
+      function handleOptionChange(optionId, value) {
+        var newOptions = state.formData.options.map(function(option) {
+          return option.id === optionId ? { ...option, text: value } : option;
+        });
+        state.formData.options = newOptions;
+        render();
+      }
+
+      function handleOptionImageChange(optionId, value) {
+        var newOptions = state.formData.options.map(function(option) {
+          return option.id === optionId ? { ...option, optionImage: value } : option;
+        });
+        state.formData.options = newOptions;
+        render();
+      }
+
+      function handleCorrectAnswerChange(optionId) {
+        var newOptions = state.formData.options.map(function(option) {
+          return { ...option, isCorrect: option.id === optionId };
+        });
+        state.formData.options = newOptions;
+        render();
+      }
+
+      function handleAddOption() {
+        var nextOptionId = String.fromCharCode(state.formData.options.length + 65); // A, B, C, ...
+        var newOptions = [
+          ...state.formData.options,
+          { id: nextOptionId, text: '', optionImage: '', isCorrect: false }
+        ];
+        state.formData.options = newOptions;
+        render();
+      }
+
+      function handleRemoveOption(optionId) {
+        var newOptions = state.formData.options.filter(function(option) {
+          return option.id !== optionId;
+        });
+        state.formData.options = newOptions;
+        render();
+      }
+
+      function handleFormSubmit(e) {
+        e.preventDefault();
+        var newQuestion = {
+          question: state.formData.question,
+          options: [...state.formData.options],
+          createdAt: Timestamp.now(),
+          imgUrl: state.formData.imgUrl,
+          about: state.formData.about
+        };
+        // Add the question to Firestore (mocked)
+        alert('Question added successfully!');
+      }
+
+      function handleDelete() {
+        var confirmed = window.confirm('Are you sure you want to delete this document?');
+        if (!confirmed) {
+          return;
+        }
+        // Simulate deleting a question
+        alert('Document deleted successfully!');
+      }
+
+      function handleUpdate() {
+        var newQuestion = {
+          question: state.formData.question,
+          options: [...state.formData.options],
+          createdAt: state.formData.createdAt,
+          imgUrl: state.formData.imgUrl,
+          about: state.formData.about
+        };
+        // Simulate updating a question
+        alert('Question updated successfully!');
+      }
+
+      function render() {
+        var app = document.getElementById('app');
+        app.innerHTML = `
+          <div class="stack">
+            <div class="box">
+              <form onsubmit="handleFormSubmit(event)">
+                <div class="stack">
+                  <label for="question">New Question:</label>
+                  <select id="subject-select" onchange="handleSubjectChange(event)">
+                    ${subjects.map(function(subject) {
+                      return `<option value="${subject.path}">${subject.name}</option>`;
+                    }).join('')}
+                  </select>
+
+                  <textarea class="textarea" value="${state.formData.about}" oninput="state.formData.about = this.value" placeholder="About"></textarea>
+                  <textarea class="textarea" value="${state.formData.imgUrl}" oninput="state.formData.imgUrl = this.value" placeholder="Image URL"></textarea>
+                  <textarea class="textarea" value="${state.formData.question}" oninput="state.formData.question = this.value" placeholder="Question"></textarea>
+
+                  <div class="stack">
+                    Options:
+                    ${state.formData.options.map(function(option) {
+                      return `
+                        <div class="option">
+                          <input type="checkbox" ${option.isCorrect ? 'checked' : ''} onclick="handleCorrectAnswerChange('${option.id}')">
+                          <label>${option.id}</label>
+                          <textarea class="textarea" value="${option.text}" oninput="handleOptionChange('${option.id}', this.value)" placeholder="Option Text"></textarea>
+                          <textarea class="textarea" value="${option.optionImage}" oninput="handleOptionImageChange('${option.id}', this.value)" placeholder="Option Image"></textarea>
+                          <button type="button" onclick="handleRemoveOption('${option.id}')">Remove</button>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+
+                  <div class="stack-row">
+                    <button type="button" class="button" onclick="handleAddOption()">Add Option</button>
+                    <button type="button" class="button" onclick="handleUpdate()">Update</button>
+                    <button type="button" class="button" onclick="handleDelete()">Delete</button>
+                    <button type="submit" class="button">Add Question</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            ${state.showAllQuestions ? `
+              <div class="stack">
+                <h3>List of Questions</h3>
+                ${state.questions.map(function(q) {
+                  return `
+                    <div class="list-item" onclick="handleClick('${q.id}')">
+                      <p>${q.question}</p>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      render();
+    }
+
+    ManageQuestions();
+  </script>
+</body>
+</html>

@@ -47,6 +47,7 @@ menuIcon.onclick = function(){
 document.addEventListener('DOMContentLoaded', function () {
     var nickName = localStorage.getItem('nickName');
     var age = localStorage.getItem('age');
+    var grade = localStorage.getItem('grade');
 
     if (!nickName || !age) {
         alert("User data is missing. Redirecting to login page.");
@@ -74,8 +75,55 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchVideosFromFirebase(selectedTopic.topic);
         highlightSelectedTopic(selectedTopic.topic);
         renderSidebar(age);
+        fetchQuestionFromFirebase(grade);
 
 });
+function fetchQuestionFromFirebase(grade) {
+    var db = firebase.firestore();
+
+    // Dynamically construct the path using the provided grade
+    var questionsRef = db.collection('quiz').doc(grade).collection('questions');
+
+    // Query the questions collection for the specified grade
+    questionsRef.get()
+      .then(function(querySnapshot) {
+        if (querySnapshot.empty) {
+          console.log('No questions found for grade: ' + grade);
+          return;
+        }
+
+        var questions = [];
+
+        // Process each document in the snapshot
+        querySnapshot.forEach(function(doc) {
+          var questionData = doc.data();
+          var question = {
+            questionImage: questionData.questionImage || "",
+            createdAt: questionData.createdAt || "",
+            grade: questionData.grade,
+            subject: questionData.subject,
+            topic: questionData.topic,
+            question: questionData.question,
+            options: questionData.options.map(function(option) {
+              return {
+                text: option.text,
+                optionImage: option.optionImage || ""
+              };
+            }),
+            correctAnswer: questionData.correctAnswer || 0
+          };
+          questions.push(question);
+        });
+
+        // Save the questions to localStorage
+        localStorage.setItem('questions', JSON.stringify(questions));
+        console.log('Questions saved to localStorage for grade: ' + grade);
+      })
+      .catch(function(error) {
+        console.log('Error getting documents: ', error);
+      });
+  }
+
 // Function to get the correct sidebar list based on the user's age
 function getSidebarListByAge(age) {
     if (age === "0-2") {
@@ -156,7 +204,7 @@ function fetchVideosFromFirebase(topic) {
 
     if (age) {
         if (topic === 'All Videos') {
-            q = videosRef.where("ageGroup", "==", age);
+            q = videosRef.where("ageGroup", "==", age).limit(50);
             console.log("Query for All Videos with Age:", age);
         } else {
             q = videosRef.where("topic", "==", topic).where("ageGroup", "==", age);

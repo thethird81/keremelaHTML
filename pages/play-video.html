@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play video</title>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/quiz-modal.css">
 </head>
@@ -13,8 +13,8 @@
         <div class="nav-left flex-div">
 
             <img src="/images/menu.png" class="menu-icon">
-            <a href="/index.html"></a>
-            <img src="/images/logo.png" class="logo">
+            <a href="/index.html"><img src="/images/keremelaKids169.jpg" class="logo"></a>
+
         </a>
 
         </div>
@@ -34,7 +34,7 @@
                     <iframe
                         id="youtube-player"
 
-                        frameborder="0"
+                        allow="autoplay"
                         >
                     </iframe>
                     <div class="iframe-controls-overlay"></div>
@@ -45,18 +45,17 @@
             </div>
         </div>
     </div>
-      <!-- Quiz Modal -->
-      <div id="overlay"></div>
-      <div id="quizModal">
-          <h3 >Quiz Question</h3>
-          <p class="questionText">What is 2 + 2?</p>
-          <button class="answer" data-correct="false"><h3>3</h3>
-        </button>
-          <button class="answer" data-correct="true"><h3>4</h3></button>
-          <button class="answer" data-correct="false"><h3>5</h3></button>
-      </div>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="/scripts/quiz.js"></script>
+       <!-- Quiz Modal -->
+       <div id="quizModal">
+        <div id="overlay"></div>
+        <div class="quiz-content">
+            <p id="questionText"></p>
+            <div id="answerContainer"></div> <!-- Dynamic answers will be added here -->
+            <p id="countdown"></p>
+        </div>
+    </div>
+
+
     <script src="/scripts/play-video.js"></script>
 
 

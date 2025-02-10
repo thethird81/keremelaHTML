@@ -24,6 +24,7 @@ function showMessage(message, divId) {
 }
      // Age List
      var ageList = ["0-2","3-4","5-7","8-10","11+"];
+     var grade = ["Pre School","KG1","KG2","KG3","GRADE 1 (YEAR 2),GRADE 2 (YEAR 3), GRADE 3 (YEAR 4)"];
 
      // Populate age dropdown
      var ageSelect = document.getElementById('ageSelect');
@@ -111,6 +112,7 @@ function showMessage(message, divId) {
                         localStorage.setItem('loggedInUserId', user.uid);
                         localStorage.setItem('age', userData.age); // Store age in localStorage
                         localStorage.setItem('nickName', userData.nickName);
+                        localStorage.setItem('grade', userData.grade);
 
                         window.location.href = '/index.html';
                     }

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firestore Insert Script</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <h1>Firestore Insert Script</h1>
+    <script>
+        // Initialize Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
+    authDomain: "keremela-508aa.firebaseapp.com",
+    databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
+    projectId: "keremela-508aa",
+    storageBucket: "keremela-508aa.firebasestorage.app",
+    messagingSenderId: "555590069435",
+    appId: "1:555590069435:web:1296b444545a84a73c8d9e"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        // Reference to Firestore
+        var db = firebase.firestore();
+
+        var questions = [
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "science",
+    "topic": "energy",
+    "question": "A drawing that shows how energy moves from one living thing to another.",
+    "options": [
+      { "text": "Energy", "optionImage": "" },
+      { "text": "Transfer", "optionImage": "" },
+      { "text": "Food chain", "optionImage": "" },
+      { "text": "Producer", "optionImage": "" },
+      { "text": "Consumer", "optionImage": "" }
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "science",
+    "topic": "plants",
+    "question": "What part of the plant absorbs water from the soil?",
+    "options": [
+      { "text": "Leaves", "optionImage": "" },
+      { "text": "Roots", "optionImage": "" },
+      { "text": "Stem", "optionImage": "" },
+      { "text": "Flower", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "math",
+    "topic": "fractions",
+    "question": "What fraction of the shape is shaded?",
+    "options": [
+      { "text": "1/4", "optionImage": "" },
+      { "text": "1/2", "optionImage": "" },
+      { "text": "1/3", "optionImage": "" },
+      { "text": "3/4", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "math",
+    "topic": "addition",
+    "question": "What is 15 + 8?",
+    "options": [
+      { "text": "20", "optionImage": "" },
+      { "text": "23", "optionImage": "" },
+      { "text": "18", "optionImage": "" },
+      { "text": "25", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "english",
+    "topic": "grammar",
+    "question": "Which word is a noun in this sentence: 'The cat jumped over the fence'?",
+    "options": [
+      { "text": "jumped", "optionImage": "" },
+      { "text": "over", "optionImage": "" },
+      { "text": "cat", "optionImage": "" },
+      { "text": "the", "optionImage": "" }
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "english",
+    "topic": "vocabulary",
+    "question": "What is the synonym of 'happy'?",
+    "options": [
+      { "text": "Sad", "optionImage": "" },
+      { "text": "Joyful", "optionImage": "" },
+      { "text": "Angry", "optionImage": "" },
+      { "text": "Tired", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "social studies",
+    "topic": "geography",
+    "question": "What is the name of the imaginary line that divides the Earth into Northern and Southern Hemispheres?",
+    "options": [
+      { "text": "Prime Meridian", "optionImage": "" },
+      { "text": "Equator", "optionImage": "" },
+      { "text": "Tropic of Cancer", "optionImage": "" },
+      { "text": "International Date Line", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "social studies",
+    "topic": "history",
+    "question": "Who was the first president of the United States?",
+    "options": [
+      { "text": "Abraham Lincoln", "optionImage": "" },
+      { "text": "George Washington", "optionImage": "" },
+      { "text": "Thomas Jefferson", "optionImage": "" },
+      { "text": "John Adams", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "art",
+    "topic": "colors",
+    "question": "What do you get when you mix red and yellow?",
+    "options": [
+      { "text": "Purple", "optionImage": "" },
+      { "text": "Green", "optionImage": "" },
+      { "text": "Orange", "optionImage": "" },
+      { "text": "Blue", "optionImage": "" }
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "art",
+    "topic": "shapes",
+    "question": "Which shape has three sides?",
+    "options": [
+      { "text": "Circle", "optionImage": "" },
+      { "text": "Triangle", "optionImage": "" },
+      { "text": "Square", "optionImage": "" },
+      { "text": "Rectangle", "optionImage": "" }
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "music",
+    "topic": "instruments",
+    "question": "Which instrument is played by blowing air into it?",
+    "options": [
+      { "text": "Guitar", "optionImage": "" },
+      { "text": "Piano", "optionImage": "" },
+      { "text": "Flute", "optionImage": "" },
+      { "text": "Drum", "optionImage": "" }
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "questionImage": "",
+    "createdAt": "",
+    "grade": "year4-grade3",
+    "subject": "music",
+    "topic": "notes",
+    "question": "Which note is the longest in duration?",
+    "options": [
+      { "text": "Quarter note", "optionImage": "" },
+      { "text": "Half note", "optionImage": "" },
+      { "text": "Whole note", "optionImage": "" },
+      { "text": "Eighth note", "optionImage": "" }
+    ],
+    "correctAnswer": 2
+  }
+];
+
+        // Insert questions into Firestore with server timestamp
+        questions.forEach(function (question) {
+            question.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            db.collection("quiz/grade3-year4/questions")
+                .add(question)
+                .then(function (docRef) {
+                    console.log("Document written with ID: ", docRef.id);
+                })
+                .catch(function (error) {
+                    console.error("Error adding document: ", error);
+                });
+        });
+    </script>
+</body>
+</html>
