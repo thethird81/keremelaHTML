@@ -110,6 +110,8 @@ function showMessage(message, divId) {
                                         localStorage.setItem('nickName', nickName);
                                         localStorage.setItem('age', age);
                                         console.log("age from login:" + age);
+                                        localStorage.setItem('grade', '3-4');
+
                                         window.location.href = '/index.html';
                                     })
                                     .catch(function(error) {
@@ -176,7 +178,10 @@ signUp.addEventListener('click', function(event) {
                     localStorage.setItem('loggedInUserId', user.uid);
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName);
+                    localStorage.setItem('grade', '3-4');
+
                     window.location.href = '/index.html';
+
                 })
                 .catch(function(error) {
                     console.error("Error writing document", error);
@@ -216,6 +221,8 @@ signIn.addEventListener('click', function(event) {
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName); // Store nickname
                     showMessage('Login is successful', 'signInMessage');
+                    localStorage.setItem('grade', '3-4');
+
                     window.location.href = '/index.html';
                 } else {
                     console.error("No such user document!");
