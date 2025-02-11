@@ -7,6 +7,9 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/quiz-modal.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
 <body>
     <nav class="flex-div">
@@ -20,12 +23,17 @@
         </div>
 
         <div class="nav-right flex-div">
+            <div id="contentDisplay"></div>
             <img src="/images/upload.png">
             <img src="/images/more.png">
             <img src="/images/notification.png">
             <img src="/images/Jack.png" class="user-icon">
         </div>
     </nav>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div id="sidebarContent"></div>
+    </div>
 
     <div class="container play-container">
         <div class="row">
@@ -55,7 +63,7 @@
         </div>
     </div>
 
-
+    <script src="/scripts/sidebar.js"></script>
     <script src="/scripts/play-video.js"></script>
 
 

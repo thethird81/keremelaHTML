@@ -14,47 +14,69 @@ var db = admin.firestore();
 
 // Data to Insert
 var data ={
-    "subject": "Computing",
-    "grade":"3-4",
-    "contents": [
-      {
-        "unit": "Computational thinking and programming",
-        "subunits": [
-          "Repeating algorithms",
-          "Indefinite loops",
-          "Count-controlled loops",
-          "Input and output",
-          "Decomposition and sub-routines",
-          "Creating good programming solutions",
-          "Using input and output with a physical device"
-        ]
-      },
-      {
-        "unit": "Managing data",
-        "subunits": [
-          "Collecting data",
-          "Storing data",
-          "Using data"
-        ]
-      },
-      {
-        "unit": "Networks and digital communication",
-        "subunits": [
-          "Network structures",
-          "Efficient networks",
-          "Transferring data securely"
-        ]
-      },
-      {
-        "unit": "Computer systems",
-        "subunits": [
-          "Using computer systems",
-          "Types of data",
-          "Working with computer systems"
-        ]
-      }
-    ]
-  }
+  "subject": "Science",
+  "grade":"3-4",
+  "contents": [
+    {
+      "unit": "Living things",
+      "subunits": [
+        "Bones and skeletons",
+        "Why we need a skeleton",
+        "Skeletons and movement",
+        "Different kinds of skeletons",
+        "Medicines and infectious diseases"
+      ]
+    },
+    {
+      "unit": "Energy",
+      "subunits": [
+        "Energy around us",
+        "Energy transfers",
+        "Energy changes",
+        "Energy and living things"
+      ]
+    },
+    {
+      "unit": "Materials",
+      "subunits": [
+        "Materials, substances and particles",
+        "How do solids and liquids behave?",
+        "Melting and solidifying",
+        "Chemical reactions"
+      ]
+    },
+    {
+      "unit": "Earth and its habitats",
+      "subunits": [
+        "The structure of the Earth",
+        "Volcanoes",
+        "Earthquakes",
+        "Different habitats"
+      ]
+    },
+    {
+      "unit": "Light",
+      "subunits": [
+        "How we see things",
+        "Light travels in straight lines",
+        "Light reflects off different surfaces",
+        "Light in the solar system",
+        "Day and night",
+        "Investigating shadow lengths"
+      ]
+    },
+    {
+      "unit": "Electricity",
+      "subunits": [
+        "Which materials conduct electricity?",
+        "Does water conduct electricity?",
+        "Using conductors and insulators in electrical appliances",
+        "Switches",
+        "Changing the number of components in a circuit"
+      ]
+    }
+  ]
+}
 
   ;
 
@@ -79,7 +101,7 @@ function insertData() {
 
                 // Insert Subunits
                 unit.subunits.forEach(function (subunit) {
-                    var subunitRef = unitRef.collection("subcontents").doc();
+                    var subunitRef = unitRef.collection("subcontents").doc(subunit);
                     subunitRef.set({
                         subcontent: subunit
                     }).then(function () {

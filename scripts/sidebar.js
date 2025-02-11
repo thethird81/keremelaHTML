@@ -1,4 +1,4 @@
-// Firebase Configuration
+// Initialize Firebase (replace with your own config)
 var firebaseConfig = {
     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
     authDomain: "keremela-508aa.firebaseapp.com",
@@ -7,24 +7,16 @@ var firebaseConfig = {
     storageBucket: "keremela-508aa.firebasestorage.app",
     messagingSenderId: "555590069435",
     appId: "1:555590069435:web:1296b444545a84a73c8d9e"
-};
+  };
+  firebase.initializeApp(firebaseConfig);
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+  var db = firebase.firestore();
 
-// Sidebar Toggle
-document.getElementById("menuBtn").addEventListener("click", function () {
-    document.getElementById("sidebar").classList.add("open");
-});
-
-document.getElementById("closeBtn").addEventListener("click", function () {
-    document.getElementById("sidebar").classList.remove("open");
-});
 
 // Fetch Data from Firestore
 function fetchSubjects() {
-    var grade = "3-4"; // Example: Fetch subjects for Grade 3-4
+   // var grade = "3-4"; // Example: Fetch subjects for Grade 3-4
+   var grade = localStorage.getItem('grade');
     var sidebarContent = document.getElementById("sidebarContent");
 
     db.collection("grades").doc(grade).collection("subjects").get().then(function (subjectSnapshot) {
@@ -56,9 +48,15 @@ function fetchSubjects() {
                     // Fetch Subunits inside Unit
                     db.collection("grades").doc(grade).collection("subjects").doc(subjectDoc.id).collection("contents").doc(unitDoc.id).collection("subcontents").get().then(function (subUnitSnapshot) {
                         subUnitSnapshot.forEach(function (subUnitDoc) {
+
                             var subUnitData = subUnitDoc.data();
-                            var subUnitPara = document.createElement("p");
+                            var subUnitPara = document.createElement("div");
+                            subUnitPara.classList.add("subunits");
                             subUnitPara.textContent = subUnitData.subcontent;
+                            // Add Click Listener to Show Details
+                            subUnitPara.addEventListener("click", function () {
+                                handleSubcontentClick(grade, subjectData.subject, unitData.unit, subUnitData.subcontent);
+                            });
                             subUnitDiv.appendChild(subUnitPara);
                         });
                     });
@@ -85,5 +83,109 @@ function fetchSubjects() {
     });
 }
 
-// Load Data
-fetchSubjects();
+
+// Fetch multiple videos from YouTube API (greater than 3 minutes)
+function fetchYouTubeVideos(query, maxResults, callback) {
+    var API_KEY = 'AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM';
+    var URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + encodeURIComponent(query) +
+              "&type=video&maxResults=" + maxResults + "&videoDuration=medium&key=" + API_KEY;
+
+    fetch(URL)
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (data) {
+            var videos = [];
+            if (data.items.length > 0) {
+                data.items.forEach(function (item) {
+                    videos.push({
+                        videoId: item.id.videoId,
+                        title: item.snippet.title,
+                        channelTitle: item.snippet.channelTitle,
+                        description: item.snippet.description,
+                        publishedAt: item.snippet.publishedAt,
+                        thumbnails: {
+                            default: item.snippet.thumbnails.default.url,
+                            medium: item.snippet.thumbnails.medium.url,
+                            high: item.snippet.thumbnails.high.url
+                        }
+                    });
+                });
+            }
+            callback(videos);
+        })
+        .catch(function (error) {
+            console.error("Error fetching YouTube videos:", error);
+            callback([]);
+        });
+}
+
+// Handle subcontent click event
+function handleSubcontentClick(grade, subject, content, subcontent) {
+    var subcontentPath = "grades/" + grade + "/subjects/" + subject + "/contents/" + content + "/subcontents/" + subcontent;
+    console.log(subcontentPath);
+    var videosRef = db.collection("grades")
+        .doc(grade)
+        .collection("subjects")
+        .doc(subject)
+        .collection("contents")
+        .doc(content)
+        .collection("subcontents")
+        .doc(subcontent)
+        .collection("videos");
+
+    // Check if 'videos' collection has any documents
+    videosRef.get()
+        .then(function (querySnapshot) {
+            if (!querySnapshot.empty) {
+                console.log("Fetching videos from Firestore...");
+                querySnapshot.forEach(function (doc) {
+                    console.log("Video found:", doc.data());
+                });
+            } else {
+                console.log("No videos collection found. Fetching from YouTube...");
+
+                var query = grade + " " + subject + " " + content + " " + subcontent + " educational video";
+                fetchYouTubeVideos(query, 50, function (videos) {
+                    if (videos.length > 0) {
+                        videos.forEach(function (video) {
+                            var videoData = {
+                                videoId: video.videoId,
+                                title: video.title,
+                                channelTitle: video.channelTitle,
+                                description: video.description,
+                                publishedAt: video.publishedAt,
+                                thumbnails: video.thumbnails,
+                                path: subcontentPath,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+
+                            videosRef.add(videoData)
+                                .then(function () {
+                                    console.log("Video saved:", videoData);
+                                })
+                                .catch(function (error) {
+                                    console.error("Error saving video:", error);
+                                });
+                        });
+                    } else {
+                        console.log("No suitable videos found.");
+                    }
+                });
+            }
+        })
+        .catch(function (error) {
+            console.error("Error checking videos collection:", error);
+        });
+}
+  // Load sidebar content when the page loads
+  document.addEventListener("DOMContentLoaded", function() {
+    fetchSubjects();
+  });
+
+  // Toggle the sidebar visibility when the menu icon is clicked
+  var menuIcon = document.querySelector(".menu-icon");
+  menuIcon.addEventListener("click", function() {
+    var sidebar = document.querySelector(".sidebar");
+    sidebar.classList.toggle("visible");
+  });

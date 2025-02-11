@@ -1,23 +1,11 @@
-// firebase-config.js
-firebaseConfig = {
-    apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
-    authDomain: "keremela-508aa.firebaseapp.com",
-    databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
-    projectId: "keremela-508aa",
-    storageBucket: "keremela-508aa.firebasestorage.app",
-    messagingSenderId: "555590069435",
-    appId: "1:555590069435:web:1296b444545a84a73c8d9e"
-};
-var menuIcon = document.querySelector(".menu-icon");
-var sidebar = document.querySelector(".sidebar");
+
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
 var age ;
-var sideBarList =[];
 
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+
+
 var db = firebase.firestore();
  var auth = firebase.auth();
    // Listen for authentication state changes
@@ -33,16 +21,7 @@ auth.onAuthStateChanged(function(user) {
 
 
 
-menuIcon.onclick = function(){
-    if (document.title === "KeremelaKIDS") {
-        sidebar.classList.toggle("small-sidebar");
-        container.classList.toggle("large-container");
-    } else {
-        //renderSidebar(age);
-        sidebar.classList.toggle("small-sidebar");
-    }
 
-}
 
 document.addEventListener('DOMContentLoaded', function () {
     var nickName = localStorage.getItem('nickName');
@@ -74,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fetchVideosFromFirebase(selectedTopic.topic);
         highlightSelectedTopic(selectedTopic.topic);
-        renderSidebar(age);
+
         fetchQuestionFromFirebase(grade);
 
 });
@@ -124,37 +103,6 @@ function fetchQuestionFromFirebase(grade) {
       });
   }
 
-// Function to get the correct sidebar list based on the user's age
-function getSidebarListByAge(age) {
-    if (age === "0-2") {
-        return sidebarListsByAge["0-2"];
-    } else if (age === "3-4") {
-        return sidebarListsByAge["3-4"];
-    } else if (age === "5-7") {
-        return sidebarListsByAge["5-7"];
-    } else if (age === "8-10") {
-        return sidebarListsByAge["8-10"];
-    } else if (age === "11+") {
-        return sidebarListsByAge["11+"];
-    } else {
-        return []; // Default empty list for invalid age
-    }
-}
-// Updated renderSidebar function
-function renderSidebar(userAge) {
-    var shortcutLinks = document.querySelector(".shortcut-links");
-    shortcutLinks.innerHTML = ""; // Clear existing links
-
-     sideBarList = getSidebarListByAge(userAge); // Get the appropriate list
-    sideBarList.forEach(function(item) {
-        var link = document.createElement("a");
-        link.innerHTML = "<i class='" + item.icon + "'></i><p>" + item.topic + "</p>";
-        link.addEventListener("click", function() {
-            fetchVideosFromFirebase(item.topic);
-        });
-        shortcutLinks.appendChild(link);
-    });
-}
 document.addEventListener('DOMContentLoaded', function () {
     var userIcon = document.getElementById('userIcon');
     var dropdownMenu = document.getElementById('dropdownMenu');
@@ -184,14 +132,6 @@ signOutButton.addEventListener('click', function() {
 });
 // Fetch videos from Firebase by topic
 function fetchVideosFromFirebase(topic) {
-    // Update the selected topic in localStorage
-    var selectedTopic = sideBarList.find(function (item) {
-        return item.topic === topic;
-    });
-    console.log("Selected Topic:", selectedTopic);
-    if (selectedTopic) {
-        localStorage.setItem("selectedTopic", JSON.stringify(selectedTopic));
-    }
 
     var age = localStorage.getItem('age');
 
@@ -234,7 +174,7 @@ function fetchVideosFromFirebase(topic) {
 
     // Highlight the selected topic in the sidebar
     console.log("Highlighting Topic:", topic);
-    highlightSelectedTopic(topic);
+   // highlightSelectedTopic(topic);
 }
 
 

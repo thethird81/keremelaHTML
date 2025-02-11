@@ -24,8 +24,26 @@ function showMessage(message, divId) {
 }
      // Age List
      var ageList = ["0-2","3-4","5-7","8-10","11+"];
-     var grade = ["Pre School","KG1","KG2","KG3","GRADE 1 (YEAR 2),GRADE 2 (YEAR 3), GRADE 3 (YEAR 4)"];
+     var grade = ["Pre School","KG","GRADE 1 (YEAR 2)","GRADE 2 (YEAR 3)", "GRADE 3 (YEAR 4)","GRADE 4 (YEAR 5)",
+     "GRADE 5 (YEAR 6)", "GRADE 6 (YEAR 7)","GRADE 8 (YEAR 9)","GRADE 9 (YEAR 10)",
+     "GRADE 10 (YEAR 11)","GRADE 11 (YEAR 12)","GRADE 12 (YEAR 13)"];
 
+     var grade2 = {
+        "Pre School": "Pre School",
+        "KG": "KG",
+        "1-2": "GRADE 1 (YEAR 2)",
+        "2-3": "GRADE 2 (YEAR 3)",
+        "3-4": "GRADE 3 (YEAR 4)",
+        "4-5": "GRADE 4 (YEAR 5)",
+        "5-6": "GRADE 5 (YEAR 6)",
+        "6-7": "GRADE 6 (YEAR 7)",
+        "7-8": "GRADE 7 (YEAR 8)",
+        "8-9": "GRADE 8 (YEAR 9)",
+        "9-10": "GRADE 9 (YEAR 10)",
+        "10-11": "GRADE 10 (YEAR 11)",
+        "11-12": "GRADE 11 (YEAR 12)",
+        "12-13": "GRADE 12 (YEAR 13)"
+      }
      // Populate age dropdown
      var ageSelect = document.getElementById('ageSelect');
      ageList.forEach(function(ageGroup) {
@@ -112,7 +130,7 @@ function showMessage(message, divId) {
                         localStorage.setItem('loggedInUserId', user.uid);
                         localStorage.setItem('age', userData.age); // Store age in localStorage
                         localStorage.setItem('nickName', userData.nickName);
-                        localStorage.setItem('grade', userData.grade);
+                        localStorage.setItem('grade', '12-13');
 
                         window.location.href = '/index.html';
                     }

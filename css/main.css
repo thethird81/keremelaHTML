@@ -64,77 +64,87 @@ nav{
 .nav-middle .search-box img{
     width: 10px;
 }
+/* Sidebar Styles */
 
-/*----------------------sidebar-------------------*/
-
-.sidebar{
-    background: #fff;
-    width: 15%;
-    height: 100vh;
+.sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: #111;
     position: fixed;
-    top: 0;
-    padding-left: 2%;
-    padding-top: 80px;
-}
-.shortcut-links a i{
-    width: 20px;
-    margin-right: 20px;
-}
-.shortcut-links a{
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    width: fit-content;
-    flex-wrap: wrap;
-}
-/* Hover and Focus States */
-.shortcut-links a:hover,
-.shortcut-links a:focus,.shortcut-links a.active {
-    color: #ed3833;
+    left: -250px;
+    transition: left 0.3s;
+    z-index: 1000;
+  }
+
+  .sidebar.visible {
+    left: 0;
+  }
+
+.sidebar.open {
+    left: 0;
 }
 
-.sidebar hr{
-    border: 0;
-    height: 1px;
-    background: #ccc;
-    width: 85%;
+#menuBtn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    cursor: pointer;
 }
-.subscribed-list h3{
-    font-size: 13px;
-    margin: 20px 0;
-    color: #5a5a5a;
+
+#closeBtn {
+    display: block;
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
 }
-.subscribed-list a{
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    width: fit-content;
-    flex-wrap: wrap;
+
+/* Collapsible Sections */
+.collapsible {
+    cursor: pointer;
+    padding: 10px;
+    background: #ddd;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 18px;
+    margin-top: 5px;
 }
-.subscribed-list a img{
-    width: 25px;
-    border-radius: 50%;
-    margin-right: 20px;
+.subunits {
+    cursor: pointer;
+    padding: 10px;
+    background: #dde;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 18px;
+    margin-top: 5px;
 }
-.small-sidebar{
-    width: 5%;
+.subunits:hover{
+    background: #ddd;
 }
-.small-sidebar a p{
+.content {
     display: none;
+    padding-left: 15px;
 }
-.small-sidebar h3{
-    display: none;
-}
-.small-sidebar hr{
-    width: 50%;
-    margin-bottom: 25px;
-}
+
+
+
+
+  /* Styling for the menu icon */
+  .menu-icon {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+  }
 
 /* ---------main--------*/
 
 .container{
     background: #f9f9f9;
-    padding-left: 17%;
+    padding-left: 2%;
     padding-right: 2%;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -243,40 +253,7 @@ nav{
     flex-basis: 49%;
 }
 @media (max-width:900px){
-    .menu-icon{
-        display: none;
-    }
-    .sidebar {
-        height: auto;
-        width: 100%; /* Full width */
-        position: static; /* Part of the normal flow */
-        display: flex;
-        flex-direction: row; /* Horizontal layout */
-        overflow-x: auto; /* Enable horizontal scrolling */
-        white-space: nowrap; /* Prevent wrapping of content */
-        padding: 10px 20px;
-        box-sizing: border-box; /* Include padding in width calculation */
-    }
 
-    .shortcut-links {
-        display: flex;
-        flex-direction: row; /* Align items horizontally */
-        gap: 20px; /* Add space between items */
-        width: 100%;
-    }
-
-    .shortcut-links a {
-        flex-direction: column; /* Align icon and text vertically */
-        align-items: center;
-        margin: 0;
-    }
-
-    .shortcut-links a img {
-       display: none;
-    }
-    .banner{
-        display: none;
-    }
     .container ,.large-container{
     padding-left: 5%;
     padding-right: 5%
