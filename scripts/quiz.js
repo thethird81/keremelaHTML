@@ -1,3 +1,4 @@
+"use strict";
 var player;
 
 // Function to get URL parameters

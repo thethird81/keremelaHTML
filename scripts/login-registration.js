@@ -1,7 +1,8 @@
-const signUpButton=document.getElementById('signUpButton');
-const signInButton=document.getElementById('signInButton');
-const signInForm=document.getElementById('signIn');
-const signUpForm=document.getElementById('signup');
+"use strict";
+var signUpButton=document.getElementById('signUpButton');
+var signInButton=document.getElementById('signInButton');
+var signInForm=document.getElementById('signIn');
+var signUpForm=document.getElementById('signup');
 
 
  var auth = firebase.auth();

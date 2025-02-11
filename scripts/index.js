@@ -1,4 +1,4 @@
-
+"use strict";
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
 var age ;
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!nickName || !age) {
         alert("User data is missing. Redirecting to login page.");
-        //window.location.href = '/pages/login-register.html';
+        window.location.href = '/pages/login-register.html';
         return;
     }
 
@@ -53,6 +53,19 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem("selectedTopic", JSON.stringify(selectedTopic));
         }
 
+        var userIcon = document.getElementById('userIcon');
+        var dropdownMenu = document.getElementById('dropdownMenu');
+
+    userIcon.addEventListener('click', function () {
+        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Close the dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            dropdownMenu.style.display = 'none';
+        }
+    });
        // fetchVideosFromFirebase(selectedTopic.topic);
         //highlightSelectedTopic(selectedTopic.topic);
 
@@ -105,21 +118,7 @@ function fetchQuestionFromFirebase(grade) {
       });
   }
 
-document.addEventListener('DOMContentLoaded', function () {
-    var userIcon = document.getElementById('userIcon');
-    var dropdownMenu = document.getElementById('dropdownMenu');
 
-    userIcon.addEventListener('click', function () {
-        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-    });
-
-    // Close the dropdown when clicking outside
-    document.addEventListener('click', function (event) {
-        if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.style.display = 'none';
-        }
-    });
-});
 signOutButton.addEventListener('click', function() {
     localStorage.clear();
     auth.signOut()
@@ -206,7 +205,7 @@ function getRandomTopic() {
 function updateVideoList(videos) {
     var listContainer = document.querySelector(".list-container");
     listContainer.innerHTML = ""; // Clear existing videos
-
+if(videos != null)
     videos.forEach(function (video) {
         var videoElement = document.createElement("div");
         videoElement.classList.add("vid-list");

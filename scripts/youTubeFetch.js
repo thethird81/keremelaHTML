@@ -1,3 +1,4 @@
+"use strict";
 // Firebase configuration
 var firebaseConfig = {
     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",

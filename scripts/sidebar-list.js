@@ -1,4 +1,4 @@
-
+"use strict";
 // Example sidebar lists for different age groups
 var sidebarListsByAge = {
     "0-2": [

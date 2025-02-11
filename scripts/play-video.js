@@ -1,3 +1,4 @@
+"use strict";
 // Fetch questions from localStorage
 var questions = JSON.parse(localStorage.getItem('questions')) || [];
 var currentQuestionIndex = 0;
