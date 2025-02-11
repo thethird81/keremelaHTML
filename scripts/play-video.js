@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Create the HTML structure for each video
             videoElement.innerHTML = `
                 <a href="play-video.html?videoId=${video.videoId}" class="small-thumbnail">
-                    <img src="${thumbnail.url}" alt="Thumbnail">
+                    <img src="${thumbnail}" alt="Thumbnail">
                 </a>
                 <div class="vid-info">
                     <a href="play-video.html?videoId=${video.videoId}">${video.title}</a>

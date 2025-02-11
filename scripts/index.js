@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var nickName = localStorage.getItem('nickName');
     var age = localStorage.getItem('age');
     var grade = localStorage.getItem('grade');
+    var videoList = JSON.parse(localStorage.getItem('videoList'));
+    updateVideoList(videoList);
 
     if (!nickName || !age) {
         alert("User data is missing. Redirecting to login page.");
@@ -51,10 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem("selectedTopic", JSON.stringify(selectedTopic));
         }
 
-        fetchVideosFromFirebase(selectedTopic.topic);
-        highlightSelectedTopic(selectedTopic.topic);
+       // fetchVideosFromFirebase(selectedTopic.topic);
+        //highlightSelectedTopic(selectedTopic.topic);
 
-        fetchQuestionFromFirebase(grade);
+        //fetchQuestionFromFirebase(grade);
 
 });
 function fetchQuestionFromFirebase(grade) {
@@ -214,12 +216,12 @@ function updateVideoList(videos) {
 
         // Correctly append `enablejsapi=1` to the URL
         videoElement.innerHTML = "<a href='pages/play-video.html?videoId=" + video.videoId + "&enablejsapi=1'>" +
-            "<img src='" + thumbnail.url + "' alt='' class='thumbnail'>" +
+            "<img src='" + thumbnail + "' alt='' class='thumbnail'>" +
             "</a>" +
             "<div class='flex-div'>" +
             "<img src='" + video.channelThumbnail + "' alt=''>" +
             "<div class='vid-info'>" +
-            "<a href='https://www.youtube.com/watch?v=" + video.videoId + "' target='_blank'>" + video.title + "</a>" +
+            "<a href='pages/play-video.html?videoId=" + video.videoId + "' >" + video.title + "</a>" +
             "<p>" + video.channelTitle + "</p>" +
             "</div>" +
             "</div>";

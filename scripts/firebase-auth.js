@@ -130,7 +130,7 @@ function showMessage(message, divId) {
                         localStorage.setItem('loggedInUserId', user.uid);
                         localStorage.setItem('age', userData.age); // Store age in localStorage
                         localStorage.setItem('nickName', userData.nickName);
-                        localStorage.setItem('grade', '12-13');
+                        localStorage.setItem('grade', '3-4');
 
                         window.location.href = '/index.html';
                     }

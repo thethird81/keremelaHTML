@@ -119,11 +119,20 @@ function fetchYouTubeVideos(query, maxResults, callback) {
             callback([]);
         });
 }
-
+function displayTitle(subcontentPath) {
+    var outputElement = document.getElementById("output");
+    if (outputElement) {
+        outputElement.innerHTML = subcontentPath;
+    } else {
+        console.log("Element not found.");
+    }
+}
 // Handle subcontent click event
 function handleSubcontentClick(grade, subject, content, subcontent) {
     var subcontentPath = "grades/" + grade + "/subjects/" + subject + "/contents/" + content + "/subcontents/" + subcontent;
+    var title =  subject + "/" + content + "/" + subcontent;
     console.log(subcontentPath);
+    displayTitle(title);
     var videosRef = db.collection("grades")
         .doc(grade)
         .collection("subjects")
@@ -139,9 +148,19 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
         .then(function (querySnapshot) {
             if (!querySnapshot.empty) {
                 console.log("Fetching videos from Firestore...");
-                querySnapshot.forEach(function (doc) {
-                    console.log("Video found:", doc.data());
+                var videos = querySnapshot.docs.map(function (doc) {
+                    return doc.data();
                 });
+                console.log("Fetched Videos:", videos);
+                // Save the fetched videos to localStorage
+                localStorage.setItem("videoList", JSON.stringify(videos));
+
+               if (window.location.pathname !== "/index.html") {
+                    window.location.href = "/index.html";
+                    }
+                updateVideoList(videos);
+                var sidebar = document.querySelector(".sidebar");
+                sidebar.classList.toggle("visible");
             } else {
                 console.log("No videos collection found. Fetching from YouTube...");
 
@@ -168,6 +187,16 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
                                     console.error("Error saving video:", error);
                                 });
                         });
+                        console.log("Fetched Videos:", videos);
+                        // Save the fetched videos to localStorage
+                        localStorage.setItem("videoList", JSON.stringify(videos));
+
+                       if (window.location.pathname !== "/index.html") {
+                            window.location.href = "/index.html";
+                            }
+                        updateVideoList(videos);
+                        var sidebar = document.querySelector(".sidebar");
+                         sidebar.classList.toggle("visible");
                     } else {
                         console.log("No suitable videos found.");
                     }
