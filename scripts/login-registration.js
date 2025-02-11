@@ -1,4 +1,11 @@
 "use strict";
+if (!Object.values) {
+    Object.values = function(obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    };
+}
 var signUpButton=document.getElementById('signUpButton');
 var signInButton=document.getElementById('signInButton');
 var signInForm=document.getElementById('signIn');

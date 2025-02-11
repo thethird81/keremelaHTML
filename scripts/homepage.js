@@ -1,4 +1,11 @@
 "use strict";
+if (!Object.values) {
+    Object.values = function(obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    };
+}
  // Firebase Configuration
  var firebaseConfig = {
     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",

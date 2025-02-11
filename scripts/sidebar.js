@@ -1,4 +1,11 @@
 "use strict";
+if (!Object.values) {
+    Object.values = function(obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    };
+}
 
 // Initialize Firebase (replace with your own config)
 var firebaseConfig = {

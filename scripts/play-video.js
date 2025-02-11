@@ -1,4 +1,11 @@
 "use strict";
+if (!Object.values) {
+    Object.values = function(obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    };
+}
 // Fetch questions from localStorage
 var questions = JSON.parse(localStorage.getItem('questions')) || [];
 var currentQuestionIndex = 0;

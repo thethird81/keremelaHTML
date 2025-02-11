@@ -1,4 +1,11 @@
 "use strict";
+if (!Object.values) {
+    Object.values = function(obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    };
+}
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
 var age ;
