@@ -224,8 +224,7 @@ if(videos != null)
         videoElement.innerHTML = "<a href='pages/play-video.html?videoId=" + video.videoId + "&enablejsapi=1'>" +
             "<img src='" + thumbnail + "' alt='' class='thumbnail'>" +
             "</a>" +
-            "<div class='flex-div'>" +
-            "<img src='" + video.channelThumbnail + "' alt=''>" +
+            "<div class='flex-div'>"  +
             "<div class='vid-info'>" +
             "<a href='pages/play-video.html?videoId=" + video.videoId + "' >" + video.title + "</a>" +
             "<p>" + video.channelTitle + "</p>" +

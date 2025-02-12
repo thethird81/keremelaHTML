@@ -173,7 +173,7 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
             } else {
                 console.log("No videos collection found. Fetching from YouTube...");
 
-                var query = grade + " " + subject + " " + content + " " + subcontent + " educational video";
+                var query = "grade " + grade +  " " + subcontent ;
                 fetchYouTubeVideos(query, 50, function (videos) {
                     if (videos.length > 0) {
                         videos.forEach(function (video) {

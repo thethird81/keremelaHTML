@@ -19,7 +19,7 @@ nav{
     padding: 10px 2%;
     justify-content: space-between;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    background: #fff;
+    background: #030000;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -64,6 +64,9 @@ nav{
 .nav-middle .search-box img{
     width: 10px;
 }
+#nickName{
+    color: #fff;
+}
 /* Sidebar Styles */
 
 .sidebar {
@@ -75,7 +78,9 @@ nav{
     transition: left 0.3s;
     z-index: 1000;
   }
-
+#sidebarContent{
+    padding: 10px;
+}
   .sidebar.visible {
     left: 0;
   }
@@ -143,7 +148,7 @@ nav{
 /* ---------main--------*/
 
 .container{
-    background: #f9f9f9;
+    background: #040000;
     padding-left: 2%;
     padding-right: 2%;
     padding-top: 20px;
@@ -159,12 +164,16 @@ nav{
     width: 100%;
     border-radius: 8px;
 }
-.list-container{
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-    grid-column-gap: 15px;
-    grid-row-gap: 30px;
+.list-container {
+    display: flex;
+    flex-wrap: wrap;
     margin-top: 15px;
+
+}
+
+.list-container > div {
+    flex: 1 1 350px; /* Makes each item flexible with a minimum width of 250px */
+    margin: 10px;
 }
 .vid-list .thumbnail{
     width: 100%;
@@ -181,11 +190,11 @@ nav{
     border-radius: 50%;
 }
 .vid-info{
-    color: #5a5a5a;
+    color: hsl(0, 7%, 83%);
     font-size: 13px;
 }
 .vid-info a{
-    color: #000;
+    color: #ffffff;
     font-weight: 600;
     display: block;
     margin-bottom: 5px;
