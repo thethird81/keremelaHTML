@@ -119,7 +119,7 @@ function showMessage(message, divId) {
                                         localStorage.setItem('age', age);
                                         console.log("age from login:" + age);
                                         localStorage.setItem('grade', '3-4');
-
+                                        localStorage.setItem("isFirstLogin", "yes");
                                         window.location.href = '/index.html';
                                     })
                                     .catch(function(error) {
@@ -141,7 +141,7 @@ function showMessage(message, divId) {
                         localStorage.setItem('age', userData.age); // Store age in localStorage
                         localStorage.setItem('nickName', userData.nickName);
                         localStorage.setItem('grade', '3-4');
-
+                        localStorage.setItem("isFirstLogin", "yes");
                         window.location.href = '/index.html';
                     }
                 }).catch(function(error) {
@@ -187,7 +187,7 @@ signUp.addEventListener('click', function(event) {
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName);
                     localStorage.setItem('grade', '3-4');
-
+                    localStorage.setItem("isFirstLogin", "yes");
                     window.location.href = '/index.html';
 
                 })
@@ -230,7 +230,7 @@ signIn.addEventListener('click', function(event) {
                     localStorage.setItem('nickName', userData.nickName); // Store nickname
                     showMessage('Login is successful', 'signInMessage');
                     localStorage.setItem('grade', '3-4');
-
+                    localStorage.setItem("isFirstLogin", "yes");
                     window.location.href = '/index.html';
                 } else {
                     console.error("No such user document!");

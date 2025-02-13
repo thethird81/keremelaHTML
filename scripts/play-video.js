@@ -6,6 +6,9 @@ if (!Object.values) {
         });
     };
 }
+
+
+
 // Fetch questions from localStorage
 var questions = JSON.parse(localStorage.getItem('questions')) || [];
 var currentQuestionIndex = 0;
@@ -39,6 +42,33 @@ var answerContainer = document.getElementById('answerContainer');
 var countdownDisplay = document.getElementById('countdown');
 var quizInterval;
 var countdownInterval;
+var signOutButton = document.getElementById('signOut');
+
+signOutButton.addEventListener('click', function() {
+    // localStorage.clear();
+    // auth.signOut()
+    //     .then(function() {
+    //         console.log('User signed out successfully');
+
+    //         window.location.href = '/index.html';
+    //     })
+    //     .catch(function(error) {
+    //         console.error('Error signing out:', error);
+    //     });
+});
+var userIcon = document.getElementById('userIcon');
+var dropdownMenu = document.getElementById('dropdownMenu');
+
+userIcon.addEventListener('click', function () {
+dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+// Close the dropdown when clicking outside
+document.addEventListener('click', function (event) {
+if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
+    dropdownMenu.style.display = 'none';
+}
+});
 function displayQuestion() {
     resetQuiz(); // Reset button states
     if (currentQuestionIndex < questions.length) {
@@ -186,6 +216,10 @@ document.addEventListener("DOMContentLoaded", function () {
            player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
        };
    }
+   var nickName = localStorage.getItem('nickName');
+    // Display nickName in the navbar
+    document.getElementById('nickName').innerText = nickName;
+
 
     }
 
@@ -203,21 +237,20 @@ document.addEventListener("DOMContentLoaded", function () {
             var videoElement = document.createElement('div');
             videoElement.classList.add('side-video-list');
 
-            // Select thumbnail resolution (prefer medium, fallback to default)
-            var thumbnail = video.thumbnails && video.thumbnails.medium ? video.thumbnails.medium : video.thumbnails && video.thumbnails.default;
+                        // Select thumbnail resolution (prefer medium, fallback to default)
+                    var thumbnail = (video.thumbnails && video.thumbnails.medium) ? video.thumbnails.medium :
+                    (video.thumbnails && video.thumbnails.default) ? video.thumbnails.default : "";
 
-            // Create the HTML structure for each video
-            videoElement.innerHTML = `
-                <a href="play-video.html?videoId=${video.videoId}" class="small-thumbnail">
-                    <img src="${thumbnail}" alt="Thumbnail">
-                </a>
-                <div class="vid-info">
-                    <a href="play-video.html?videoId=${video.videoId}">${video.title}</a>
-                    <p>${video.channelTitle}</p>
-                    <p>${video.viewCount} Views</p>
-                </div>
-            `;
-
+                    // Create the HTML structure for each video
+                    videoElement.innerHTML =
+                    '<a href="play-video.html?videoId=' + video.videoId + '" class="small-thumbnail">' +
+                    '<img src="' + thumbnail + '" alt="Thumbnail">' +
+                    '</a>' +
+                    '<div class="vid-info">' +
+                    '<a href="play-video.html?videoId=' + video.videoId + '">' + video.title + '</a>' +
+                    '<p>' + video.channelTitle + '</p>' +
+                    '<p>' + video.viewCount + ' Views</p>' +
+                    '</div>';
             // Append the video to the sidebar
             rightSidebar.appendChild(videoElement);
         });

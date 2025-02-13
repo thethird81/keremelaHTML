@@ -22,6 +22,7 @@ var firebaseConfig = {
   var db = firebase.firestore();
 
 
+
 // Fetch Data from Firestore
 function fetchSubjects() {
    // var grade = "3-4"; // Example: Fetch subjects for Grade 3-4
@@ -168,8 +169,12 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
                     window.location.href = "/index.html";
                     }
                 updateVideoList(videos);
-                var sidebar = document.querySelector(".sidebar");
-                sidebar.classList.toggle("visible");
+                if(localStorage.getItem("isFirstLogin")=="yes")
+                        {
+                            var sidebar = document.querySelector(".sidebar");
+                            sidebar.classList.toggle("visible");
+                        }
+
             } else {
                 console.log("No videos collection found. Fetching from YouTube...");
 
@@ -204,8 +209,13 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
                             window.location.href = "/index.html";
                             }
                         updateVideoList(videos);
-                        var sidebar = document.querySelector(".sidebar");
-                         sidebar.classList.toggle("visible");
+
+                        if(localStorage.getItem("isFirstLogin")=="yes")
+                        {
+                            var sidebar = document.querySelector(".sidebar");
+                            sidebar.classList.toggle("visible");
+                        }
+
                     } else {
                         console.log("No suitable videos found.");
                     }
@@ -216,11 +226,20 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
             console.error("Error checking videos collection:", error);
         });
 }
-  // Load sidebar content when the page loads
-  document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
+    var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
+    var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
     fetchSubjects();
-  });
 
+    if (isIndexPage && isFirstLogin== "yes") {
+
+        handleSubcontentClick('3-4', "Math", "2D shapes", "Symmetry");
+
+        // Mark that the user has logged in before
+        localStorage.setItem("isFirstLogin", "no");
+        console.log("inside if");
+    }
+});
   // Toggle the sidebar visibility when the menu icon is clicked
   var menuIcon = document.querySelector(".menu-icon");
   menuIcon.addEventListener("click", function() {
