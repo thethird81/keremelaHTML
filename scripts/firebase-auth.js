@@ -140,7 +140,7 @@ function showMessage(message, divId) {
                         localStorage.setItem('loggedInUserId', user.uid);
                         localStorage.setItem('age', userData.age); // Store age in localStorage
                         localStorage.setItem('nickName', userData.nickName);
-                        localStorage.setItem('grade', '3-4');
+                        localStorage.setItem('grade', userData.nickName);
                         localStorage.setItem("isFirstLogin", "yes");
                         window.location.href = '/index.html';
                     }
@@ -229,8 +229,10 @@ signIn.addEventListener('click', function(event) {
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName); // Store nickname
                     showMessage('Login is successful', 'signInMessage');
-                    localStorage.setItem('grade', '3-4');
+                    localStorage.setItem('grade', userData.grade);
+                    localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
                     localStorage.setItem("isFirstLogin", "yes");
+                    console.log("userData.lastWatchedPath");
                     window.location.href = '/index.html';
                 } else {
                     console.error("No such user document!");

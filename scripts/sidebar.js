@@ -27,6 +27,7 @@ var firebaseConfig = {
 function fetchSubjects() {
    // var grade = "3-4"; // Example: Fetch subjects for Grade 3-4
    var grade = localStorage.getItem('grade');
+
     var sidebarContent = document.getElementById("sidebarContent");
 
     db.collection("grades").doc(grade).collection("subjects").get().then(function (subjectSnapshot) {
@@ -64,6 +65,7 @@ function fetchSubjects() {
                             subUnitPara.classList.add("subunits");
                             subUnitPara.textContent = subUnitData.subcontent;
                             // Add Click Listener to Show Details
+
                             subUnitPara.addEventListener("click", function () {
                                 handleSubcontentClick(grade, subjectData.subject, unitData.unit, subUnitData.subcontent);
                             });
@@ -226,14 +228,19 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
             console.error("Error checking videos collection:", error);
         });
 }
+
+
 document.addEventListener("DOMContentLoaded", function() {
     var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
     var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+   var lastWatchedPathParts = lastWatchedPath.split("/");
     fetchSubjects();
+
 
     if (isIndexPage && isFirstLogin== "yes") {
 
-        handleSubcontentClick('3-4', "Math", "2D shapes", "Symmetry");
+        handleSubcontentClick(lastWatchedPathParts[0], lastWatchedPathParts[1], lastWatchedPathParts[2], lastWatchedPathParts[3]);
 
         // Mark that the user has logged in before
         localStorage.setItem("isFirstLogin", "no");

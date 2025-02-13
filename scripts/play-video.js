@@ -43,18 +43,18 @@ var countdownDisplay = document.getElementById('countdown');
 var quizInterval;
 var countdownInterval;
 var signOutButton = document.getElementById('signOut');
-
+var auth = firebase.auth();
 signOutButton.addEventListener('click', function() {
-    // localStorage.clear();
-    // auth.signOut()
-    //     .then(function() {
-    //         console.log('User signed out successfully');
+    localStorage.clear();
+    auth.signOut()
+        .then(function() {
+            console.log('User signed out successfully');
 
-    //         window.location.href = '/index.html';
-    //     })
-    //     .catch(function(error) {
-    //         console.error('Error signing out:', error);
-    //     });
+            window.location.href = '/index.html';
+        })
+        .catch(function(error) {
+            console.error('Error signing out:', error);
+        });
 });
 var userIcon = document.getElementById('userIcon');
 var dropdownMenu = document.getElementById('dropdownMenu');
