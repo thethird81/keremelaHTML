@@ -100,7 +100,7 @@ function fetchSubjects() {
 function fetchYouTubeVideos(query, maxResults, callback) {
     var API_KEY = 'AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM';
     var URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + encodeURIComponent(query) +
-              "&type=video&maxResults=" + maxResults + "&videoDuration=medium&key=" + API_KEY;
+              "&type=video&maxResults=" + maxResults + "&key=" + API_KEY;
 
     fetch(URL)
         .then(function (response) {
@@ -171,7 +171,7 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
                     window.location.href = "/index.html";
                     }
                 updateVideoList(videos);
-                if(localStorage.getItem("isFirstLogin")=="yes")
+                if(localStorage.getItem("isFirstLogin")=="no")
                         {
                             var sidebar = document.querySelector(".sidebar");
                             sidebar.classList.toggle("visible");
@@ -179,8 +179,19 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
 
             } else {
                 console.log("No videos collection found. Fetching from YouTube...");
-
                 var query = "grade " + grade +  " " + subcontent ;
+if (grade == 'Pre-KG')
+{
+    query = "grade " + grade +  " " + subcontent + " todler educational songs only  ";
+}else if(grade == 'KG'){
+    query = "grade " + grade +  " " + subcontent + " todler educational video, songs  " ;
+}else if('3-4'){
+    query = "grade " + grade +  " " + subcontent + "   for kids " ;
+}else{
+    query = "grade " + grade +  " " + subcontent;
+}
+
+console.log(query);
                 fetchYouTubeVideos(query, 50, function (videos) {
                     if (videos.length > 0) {
                         videos.forEach(function (video) {

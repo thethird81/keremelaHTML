@@ -18,7 +18,7 @@ img{
 nav{
     padding: 10px 2%;
     justify-content: space-between;
-    box-shadow: 0 0 10px rgba(200, 0, 0, 0.2);
+    box-shadow: 0 0 10px rgba(200, 0, 0, 0.8);
     background: #030000;
     position: sticky;
     top: 0;
@@ -71,15 +71,55 @@ nav{
 
 .sidebar {
     width: 250px;
-    height: 100%;
-    background-color: #111;
+    height: 100vh; /* Full viewport height */
+    background: linear-gradient(to bottom, rgba(101, 1, 132, 0.89), rgba(44, 14, 5, 1)); /* Green school theme */
     position: fixed;
     left: -250px;
+
+
     transition: left 0.3s;
     z-index: 1000;
-  }
+    display: flex;
+    flex-direction: column;
+
+
+
+    padding: 20px;
+    padding-bottom: 60px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+
+}
+
+
+/* Ensure sidebar content fits and scrolls */
+#sidebarContent {
+    flex-grow: 1; /* Allows content to expand */
+    overflow-y: auto; /* Enables scrolling */
+    padding-bottom: 20px; /* Prevents content from being cut off */
+    -ms-overflow-style: none;  /* Hide scrollbar for IE/Edge */
+    scrollbar-width: none;  /* Hide scrollbar for Firefox */
+}
+
+/* For Webkit-based browsers (Chrome, Edge, Safari) */
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #222;
+}
+
 #sidebarContent{
     padding: 10px;
+
+
 }
   .sidebar.visible {
     left: 0;
@@ -105,30 +145,51 @@ nav{
     font-size: 20px;
     cursor: pointer;
 }
+.collapsible:hover {
+    background: #405a42;
+}
 
-/* Collapsible Sections */
+.collapsible::after {
+    content: '▼';
+    font-size: 14px;
+    transition: transform 0.3s;
+}
+
+/* Rotate arrow when active */
+.collapsible.active::after {
+    transform: rotate(180deg);
+}
+/* Collapsible Buttons */
 .collapsible {
-    cursor: pointer;
-    padding: 10px;
-    background: #ddd;
-    border: none;
     width: 100%;
-    text-align: left;
+    background: #b7730d;
+    background: rgba(28, 26, 23, 0.57);
+    color: white;
     font-size: 18px;
-    margin-top: 5px;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    margin: 5px 0;
+    border-radius: 8px;
+    text-align: left;
+    transition: background 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
 }
 .subunits {
+    padding: 8px 12px;
+    background: rgba(126, 42, 42, 0.54);
+    color: #ffffff;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 4px;
     cursor: pointer;
-    padding: 10px;
-    background: #dde;
-    border: none;
-    width: 100%;
-    text-align: left;
-    font-size: 18px;
-    margin-top: 5px;
+    transition: background 0.3s ease-in-out;
 }
 .subunits:hover{
-    background: #ddd;
+    background: #745f5f;
 }
 .content {
     display: none;
