@@ -287,7 +287,7 @@ nav{
 
 }
 
-.iframe-container iframe {
+.iframe-container #youtube-player {
     position: absolute;
     top: 0;
     left: 0;

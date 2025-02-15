@@ -1,4 +1,6 @@
 "use strict";
+
+// Polyfill for Object.values (for older browsers)
 if (!Object.values) {
     Object.values = function(obj) {
         return Object.keys(obj).map(function(key) {
@@ -7,33 +9,116 @@ if (!Object.values) {
     };
 }
 
+// Fetch questions and video list from localStorage
+var questions = JSON.parse(localStorage.getItem("questions") || "[]");
+var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+var videoId = getURLParameter("videoId") || videoList[0] || "dQw4w9WgXcQ"; // Default video ID
+var currentVideoIndex = 0;
+var player;
 
+// Load YouTube IFrame API asynchronously
+var tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName("script")[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-// Fetch questions from localStorage
-var questions = JSON.parse(localStorage.getItem('questions')) || [];
-var currentQuestionIndex = 0;
-var player = document.getElementById("youtube-player");
-console.log("questions = "+questions.length);
+console.log("Total Questions:", questions.length);
+
 // Function to get URL parameters
 function getURLParameter(name) {
-    var url = window.location.href;
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(url);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    var results = new RegExp("[?&]" + name + "=([^&#]*)").exec(window.location.href);
+    return results ? decodeURIComponent(results[1].replace(/\+/g, " ")) : "";
 }
 
-// Get videoId from URL parameters
-var videoId = getURLParameter('videoId');
-
-// Set the video source dynamically based on the videoId
-if (videoId) {
-
-    player.src = "https://www.youtube.com/embed/" + videoId + "?enablejsapi=1"; // Enable JS API for control
-    player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-} else {
-    console.error("No videoId found in URL.");
+// Function to load the next video
+function getNextVideoId() {
+    if (!videoList.length) {
+        console.warn("No videos available in the list.");
+        return null;
+    }
+    currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
+    return videoList[currentVideoIndex];
 }
+
+function onYouTubeIframeAPIReady() {
+    console.log("YouTube IFrame API is ready!");
+    player = new YT.Player("youtube-player", {
+        videoId: videoId,
+        host: "https://www.youtube.com", // Fix postMessage error
+        playerVars: { enablejsapi: 1 },
+        events: {
+            "onReady": onPlayerReady,
+            "onStateChange": onPlayerStateChange
+        }
+    });
+}
+
+// The API will call this function when the video player is ready.
+function onPlayerReady(event) {
+    player.playVideo();
+}
+
+// The API calls this function when the player's state changes.
+function onPlayerStateChange(event) {
+    console.log("Player state changed:", event.data);
+    if (event.data === YT.PlayerState.ENDED) {
+        var nextVideoId = getNextVideoId();
+        if (nextVideoId) {
+            player.loadVideoById(nextVideoId);
+        } else {
+            console.warn("No next video found.");
+        }
+    }
+}
+
+
+
+// Handle DOM Content Load
+document.addEventListener("DOMContentLoaded", function () {
+    if (questions.length > 0) {
+        displayQuestion();
+    } else {
+        console.warn("No questions available.");
+    }
+
+    var nickName = localStorage.getItem("nickName");
+    if (nickName) {
+        document.getElementById("nickName").innerText = nickName;
+    }
+
+    // Populate Right Sidebar with Videos
+    if (videoList.length) {
+        var rightSidebar = document.querySelector(".right-sidebar");
+        rightSidebar.innerHTML = "";
+
+        videoList.forEach(function (video) {
+            var videoElement = document.createElement("div");
+            videoElement.classList.add("side-video-list");
+
+            var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
+                            video.thumbnails.medium : (video.thumbnails && video.thumbnails.default) ?
+                            video.thumbnails.default : "";
+
+            videoElement.innerHTML =
+                '<a href="play-video.html?videoId=' + video.videoId + '" class="small-thumbnail">' +
+                '<img src="' + thumbnail + '" alt="Thumbnail">' +
+                '</a>' +
+                '<div class="vid-info">' +
+                '<a href="play-video.html?videoId=' + video.videoId + '">' + video.title + '</a>' +
+                '<p>' + video.channelTitle + '</p>' +
+                '<p>' + video.viewCount + ' Views</p>' +
+                '</div>';
+
+            rightSidebar.appendChild(videoElement);
+        });
+    } else {
+        console.log("No videos found in localStorage.");
+    }
+});
+
+
+
+//=============================================================================
 // Modal and Quiz Elements
 var modal = document.getElementById('quizModal');
 var overlay = document.getElementById('overlay');
@@ -203,60 +288,3 @@ function handleAnswerClick(e) {
     }
 }
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    // Retrieve the video list from localStorage
-    if(questions.length < 0){
-        displayQuestion();
-    }else{
-         // Ensure the player iframe is defined
-   var player = document.getElementById('youtube-player');
-   if (player && player.contentWindow) {
-       player.onload = function () {
-           player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-       };
-   }
-   var nickName = localStorage.getItem('nickName');
-    // Display nickName in the navbar
-    document.getElementById('nickName').innerText = nickName;
-
-
-    }
-
-
-
-
-    var videoList = JSON.parse(localStorage.getItem('videoList'));
-
-    if (videoList) {
-        var rightSidebar = document.querySelector('.right-sidebar');
-        rightSidebar.innerHTML = ''; // Clear existing sidebar content
-
-        // Loop through the video list and add each video to the sidebar
-        videoList.forEach(function (video) {
-            var videoElement = document.createElement('div');
-            videoElement.classList.add('side-video-list');
-
-                        // Select thumbnail resolution (prefer medium, fallback to default)
-                    var thumbnail = (video.thumbnails && video.thumbnails.medium) ? video.thumbnails.medium :
-                    (video.thumbnails && video.thumbnails.default) ? video.thumbnails.default : "";
-
-                    // Create the HTML structure for each video
-                    videoElement.innerHTML =
-                    '<a href="play-video.html?videoId=' + video.videoId + '" class="small-thumbnail">' +
-                    '<img src="' + thumbnail + '" alt="Thumbnail">' +
-                    '</a>' +
-                    '<div class="vid-info">' +
-                    '<a href="play-video.html?videoId=' + video.videoId + '">' + video.title + '</a>' +
-                    '<p>' + video.channelTitle + '</p>' +
-                    '<p>' + video.viewCount + ' Views</p>' +
-                    '</div>';
-            // Append the video to the sidebar
-            rightSidebar.appendChild(videoElement);
-        });
-    } else {
-        console.log("No video list found in localStorage.");
-    }
-
-
-});
