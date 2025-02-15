@@ -208,13 +208,17 @@ nav{
 
 /* ---------main--------*/
 
-.container{
+.container {
     background: #060101;
     padding-left: 2%;
     padding-right: 2%;
-    padding-top: 20px;
+    padding-top: 2%;
     padding-bottom: 20px;
+    position: relative; /* Ensure the container is the reference for fixed positioning */
+    height: 100vh; /* Make the container full height */
+    overflow: hidden; /* Prevent scrolling of the container */
 }
+
 .large-container{
     padding-left: 7%;
 }
@@ -272,22 +276,24 @@ nav{
 }
 .play-video{
 
-    flex-basis: 79%;
+    flex-basis: 84%;
 
 }
 .right-sidebar{
-    flex-basis: 20%;
+    flex-basis: 15%;
+    height: 100vh; /* Make the sidebar full height */
+    overflow-y: auto; /* Allow scrolling */
 }
 .iframe-container {
     position: relative;
     width: 100%;
     height: 85vh;
     border-radius: 2%;
-    overflow: hidden;
+    padding-top: 56.25%
 
 }
 
-.iframe-container #youtube-player {
+/* .iframe-container #youtube-player {
     position: absolute;
     top: 0;
     left: 0;
@@ -296,6 +302,15 @@ nav{
     border: 2px ;
     z-index: 0;
 
+} */
+#youtube-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px ;
+    z-index: 0;
 }
 
 .iframe-controls-overlay {

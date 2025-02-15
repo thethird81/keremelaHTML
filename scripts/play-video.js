@@ -41,10 +41,11 @@ function getNextVideoId() {
 }
 
 function onYouTubeIframeAPIReady() {
-    console.log("YouTube IFrame API is ready!");
+
+    console.log("YouTube IFrame API is ready!" + videoId );
     player = new YT.Player("youtube-player", {
         videoId: videoId,
-        host: "https://www.youtube.com", // Fix postMessage error
+
         playerVars: { enablejsapi: 1 },
         events: {
             "onReady": onPlayerReady,
@@ -100,16 +101,24 @@ document.addEventListener("DOMContentLoaded", function () {
                             video.thumbnails.default : "";
 
             videoElement.innerHTML =
-                '<a href="play-video.html?videoId=' + video.videoId + '" class="small-thumbnail">' +
+                '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
                 '<img src="' + thumbnail + '" alt="Thumbnail">' +
-                '</a>' +
+                '</div>' +
                 '<div class="vid-info">' +
-                '<a href="play-video.html?videoId=' + video.videoId + '">' + video.title + '</a>' +
+                '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
                 '<p>' + video.channelTitle + '</p>' +
-                '<p>' + video.viewCount + ' Views</p>' +
                 '</div>';
 
             rightSidebar.appendChild(videoElement);
+        });
+
+        // Add click event listeners to video elements
+        var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
+        videoElements.forEach(function (element) {
+            element.addEventListener("click", function () {
+                var videoId = this.getAttribute("data-video-id");
+                playVideo(videoId); // Call the function to play the video
+            });
         });
     } else {
         console.log("No videos found in localStorage.");
@@ -117,7 +126,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
+// Function to play the video in the YouTube player
+function playVideo(videoId) {
+    if (player && typeof player.loadVideoById === "function") {
+        player.loadVideoById(videoId); // Load and play the video
+    } else {
+        console.error("YouTube player is not initialized.");
+    }
+}
 //=============================================================================
 // Modal and Quiz Elements
 var modal = document.getElementById('quizModal');
