@@ -3,6 +3,11 @@
     padding: 0;
     font-family:'poppins',sans-serif;
     box-sizing: border-box;
+
+}
+.play-video-page {
+    overflow: hidden;
+    height: 100vh;
 }
 a{
     text-decoration: none;
@@ -215,8 +220,7 @@ nav{
     padding-top: 2%;
     padding-bottom: 20px;
     position: relative; /* Ensure the container is the reference for fixed positioning */
-    height: 100vh; /* Make the container full height */
-    overflow: hidden; /* Prevent scrolling of the container */
+
 }
 
 .large-container{
@@ -276,13 +280,23 @@ nav{
 }
 .play-video{
 
-    flex-basis: 84%;
+    flex-basis: 79%;
 
 }
-.right-sidebar{
-    flex-basis: 15%;
+.right-sidebar {
+    flex-basis: 20%;
     height: 100vh; /* Make the sidebar full height */
     overflow-y: auto; /* Allow scrolling */
+    padding: 10px;
+
+    /* Hide scrollbar for all browsers */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for WebKit-based browsers (Chrome, Safari, Edge) */
+.right-sidebar::-webkit-scrollbar {
+    display: none;
 }
 .iframe-container {
     position: relative;

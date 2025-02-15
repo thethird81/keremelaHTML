@@ -114,20 +114,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Add click event listeners to video elements
         var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
-        videoElements.forEach(function (element) {
-            element.addEventListener("click", function () {
-                var videoId = this.getAttribute("data-video-id");
-                playVideo(videoId); // Call the function to play the video
-            });
-        });
-    } else {
-        console.log("No videos found in localStorage.");
-    }
-});
+       // Convert NodeList to an array manually and add event listeners
+                var i;
+                for (i = 0; i < videoElements.length; i++) {
+                    (function (element) {
+                        element.addEventListener("click", function () {
+                            var videoId = element.getAttribute("data-video-id");
+                            playVideo(videoId); // Call the function to play the video
+                        });
+                    })(videoElements[i]); // IIFE to correctly capture element reference
+                }
+                    } else {
+                        console.log("No videos found in localStorage.");
+                    }
+                });
 
 
 // Function to play the video in the YouTube player
 function playVideo(videoId) {
+
     if (player && typeof player.loadVideoById === "function") {
         player.loadVideoById(videoId); // Load and play the video
     } else {
