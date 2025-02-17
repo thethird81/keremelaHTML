@@ -138,15 +138,18 @@ signIn.addEventListener('click', function(event) {
 
             userRef.get().then(function(doc) {
                 if (doc.exists) {
+
                     var userData = doc.data();
                     localStorage.setItem('loggedInUserId', userId);
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName); // Store nickname
                     showMessage('Login is successful', 'signInMessage');
                     localStorage.setItem('grade', userData.grade);
+                    // Assuming userData.selectedQuizList is an array
+                    localStorage.setItem('selectedQuizList', JSON.stringify(userData.selectedQuizList));
                     localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
                     localStorage.setItem("isFirstLogin", "yes");
-                    console.log("userData.lastWatchedPath");
+
                     window.location.href = '/index.html';
                 } else {
                     console.error("No such user document!");

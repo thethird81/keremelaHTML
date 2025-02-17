@@ -34,6 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var nickName = localStorage.getItem('nickName');
     var age = localStorage.getItem('age');
     var grade = localStorage.getItem('grade');
+    var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
+
+    // Step 2: Parse the retrieved data (assuming it's stored as a JSON string)
+    var selectedQuizList = JSON.parse(storedSelectedQuizList);
+    //console.log("selectedQuizList" + selectedQuizList);
     var videoList = JSON.parse(localStorage.getItem('videoList'));
     updateVideoList(videoList);
 
@@ -85,61 +90,83 @@ document.addEventListener('DOMContentLoaded', function () {
        // fetchVideosFromFirebase(selectedTopic.topic);
         //highlightSelectedTopic(selectedTopic.topic);
 
-        fetchQuestionFromFirebase("grade3-year4");
+        fetchQuestionsForSelectedPaths(selectedQuizList);
 
 });
-function fetchQuestionFromFirebase(grade) {
+function fetchQuestionsForSelectedPaths(selectedQuizList) {
     var db = firebase.firestore();
+    var allQuestions = [];
+    var fetchPromises = []; // Store all fetch promises
 
-    // Dynamically construct the path using the provided grade
-    var questionsRef = db.collection('grades')
-      .doc('3-4')
-      .collection('subjects')
-      .doc('Math')
-      .collection('contents')
-      .doc('Multiplication and division')
-      .collection('subcontents')
-      .doc('Multiplying  and Dividing 2 digit by 1 digit number')
-      .collection('questions');
+    for (var i = 0; i < selectedQuizList.length; i++) {
+        (function(path) {
+            var pathParts = path.split('/'); // Split path into hierarchy levels
 
-    // Query the questions collection for the specified grade
-    questionsRef.get()
-      .then(function(querySnapshot) {
-        if (querySnapshot.empty) {
-          console.log('No questions found for grade: ' + grade);
-          return;
+            // Ensure the path has exactly 4 parts (Grade, Subject, Content, Subcontent)
+            if (pathParts.length !== 4) {
+                console.log("Invalid path structure: " + path);
+                return;
+            }
+
+            var grade = pathParts[0];
+            var subject = pathParts[1];
+            var content = pathParts[2];
+            var subcontent = pathParts[3];
+
+            // Construct Firestore reference dynamically
+            var questionsRef = db.collection('grades')
+                .doc(grade)
+                .collection('subjects')
+                .doc(subject)
+                .collection('contents')
+                .doc(content)
+                .collection('subcontents')
+                .doc(subcontent)
+                .collection('questions');
+
+            // Fetch questions from Firestore
+            var fetchPromise = questionsRef.get().then(function(querySnapshot) {
+                if (querySnapshot.empty) {
+                    console.log("No questions found for path: " + path);
+                    return;
+                }
+
+                querySnapshot.forEach(function(doc) {
+                    var questionData = doc.data();
+                    var question = {
+                        questionImage: questionData.questionImage || "",
+                        createdAt: questionData.createdAt || "",
+                        question: questionData.question || "",
+                        options: Array.isArray(questionData.options) ? questionData.options.map(function(option) {
+                            return {
+                                text: option.text || "",
+                                optionImage: option.optionImage || ""
+                            };
+                        }) : [],
+                        correctAnswer: questionData.correctAnswer || 0
+                    };
+                    allQuestions.push(question);
+                });
+            }).catch(function(error) {
+                console.log("Error fetching questions for path: " + path, error);
+            });
+
+            fetchPromises.push(fetchPromise);
+        })(selectedQuizList[i]); // Immediately-invoked function expression (IIFE)
+    }
+
+    // Wait for all fetch operations to complete
+    Promise.all(fetchPromises).then(function() {
+        if (allQuestions.length > 0) {
+            localStorage.setItem('questions', JSON.stringify(allQuestions));
+            console.log('Questions saved to localStorage for selected paths.');
+        } else {
+            console.log('No questions retrieved for the selected paths.');
         }
-
-        var questions = [];
-
-        // Process each document in the snapshot
-        querySnapshot.forEach(function(doc) {
-          var questionData = doc.data();
-
-          var question = {
-            questionImage: questionData.questionImage || "",
-            createdAt: questionData.createdAt || "",
-            question: questionData.question || "",
-            options: Array.isArray(questionData.options) ? questionData.options.map(function(option) {
-              return {
-                text: option.text || "",
-                optionImage: option.optionImage || ""
-              };
-            }) : [],
-            correctAnswer: questionData.correctAnswer || 0
-          };
-
-          questions.push(question);
-        });
-
-        // Save the questions to localStorage
-        localStorage.setItem('questions', JSON.stringify(questions));
-        console.log('Questions saved to localStorage for grade: ' + grade);
-      })
-      .catch(function(error) {
-        console.log('Error getting documents: ', error);
-      });
-  }
+    }).catch(function(error) {
+        console.log("Error processing questions: ", error);
+    });
+}
 
 
 // Function to update lastWatchedPath on sign-out
