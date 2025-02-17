@@ -333,7 +333,7 @@ function startQuizInterval() {
     clearInterval(quizInterval);
     quizInterval = setTimeout(function () {
         displayQuestion();
-    }, 5000); // Show the quiz after 5 seconds
+    }, 60000); // Show the quiz after 5 seconds
 }
 
 // Handle answer clicks
@@ -349,7 +349,7 @@ function handleAnswerClick(e) {
         currentQuestionIndex++;
         setTimeout(function () {
             startQuizInterval(); // Show the next question after 5 seconds
-        }, 5000);
+        }, 60000);
     } else {
         console.log("Wrong answer clicked!");
         var buttons = answerContainer.getElementsByClassName('answer');
@@ -357,7 +357,7 @@ function handleAnswerClick(e) {
             buttons[i].disabled = true;
         }
 
-        var countdownTimer = 5;
+        var countdownTimer = 20;
         countdownDisplay.innerHTML = countdownTimer;
         countdownInterval = setInterval(function () {
             countdownTimer--;
