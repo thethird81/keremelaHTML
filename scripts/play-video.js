@@ -13,7 +13,9 @@ if (!Object.values) {
 var questions = JSON.parse(localStorage.getItem("questions") || "[]");
 var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
 var videoId = getURLParameter("videoId") || videoList[0] || "dQw4w9WgXcQ"; // Default video ID
+var iframeOverlay = document.getElementById('iframeOverlay');
 var currentVideoIndex = 0;
+var currentQuestionIndex = 0;
 var player;
 
 // Load YouTube IFrame API asynchronously
@@ -52,11 +54,17 @@ function onYouTubeIframeAPIReady() {
             "onStateChange": onPlayerStateChange
         }
     });
+
 }
 
 // The API will call this function when the video player is ready.
 function onPlayerReady(event) {
     player.playVideo();
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+
+   var lastWatchedPathParts = lastWatchedPath.split("/");
+    if (lastWatchedPathParts[1]=='Entertainment')
+        displayQuestion();
 }
 
 // The API calls this function when the player's state changes.
@@ -76,17 +84,20 @@ function onPlayerStateChange(event) {
 
 // Handle DOM Content Load
 document.addEventListener("DOMContentLoaded", function () {
-    if (questions.length > 0) {
-        displayQuestion();
-    } else {
-        console.warn("No questions available.");
-    }
 
     var nickName = localStorage.getItem("nickName");
     if (nickName) {
         document.getElementById("nickName").innerText = nickName;
+        document.getElementById("title").innerText = nickName;
     }
-
+    if (nickName === 'abye') {
+        // Change the user icon to the desired image
+        document.getElementById('userIcon').src = '/images/abyeScracher.JPG';
+    }
+    if (nickName === 'yabran') {
+        // Change the user icon to the desired image
+        document.getElementById('userIcon').src = '/images/yabran.JPG';
+    }
     // Populate Right Sidebar with Videos
     if (videoList.length) {
         var rightSidebar = document.querySelector(".right-sidebar");
@@ -150,19 +161,68 @@ var quizInterval;
 var countdownInterval;
 var signOutButton = document.getElementById('signOut');
 var auth = firebase.auth();
-signOutButton.addEventListener('click', function() {
-    localStorage.clear();
-    auth.signOut()
-        .then(function() {
-            console.log('User signed out successfully');
+// Function to update lastWatchedPath on sign-out
+function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
+    var db = firebase.firestore();
+    var userRef = db.collection("users").doc(userId);
 
-            window.location.href = '/index.html';
-        })
-        .catch(function(error) {
-            console.error('Error signing out:', error);
-        });
+    return userRef.update({
+        lastWatchedPath: lastWatchedPath
+    })
+    .then(function() {
+        console.log("lastWatchedPath updated successfully!");
+    })
+    .catch(function(error) {
+        console.error("Error updating lastWatchedPath: ", error);
+    });
+}
+
+// Sign-out functionality
+signOutButton.addEventListener('click', function() {
+    var userId = localStorage.getItem('loggedInUserId');
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+
+    console.log("UserId:", userId);
+    console.log("LastWatchedPath:", lastWatchedPath);
+
+    if (userId && lastWatchedPath) {
+        updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
+            .then(function() {
+                // Clear localStorage and sign out after Firestore update completes
+                localStorage.clear();
+                auth.signOut()
+                    .then(function() {
+                        console.log('User signed out successfully');
+                        window.location.href = '/pages/login-register.html';
+                    })
+                    .catch(function(error) {
+                        console.error('Error signing out:', error);
+                    });
+            })
+            .catch(function(error) {
+                console.error("Error during Firestore update:", error);
+            });
+    } else {
+        console.error("UserId or LastWatchedPath is missing in localStorage.");
+    }
+});
+iframeOverlay.addEventListener('click', function() {
+    if (player && typeof player.getPlayerState === 'function') {
+        var playerState = player.getPlayerState();
+
+        if (playerState === YT.PlayerState.PLAYING) {
+            player.pauseVideo(); // Pause the video if it's playing
+            console.log("Video paused");
+        } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.ENDED) {
+            player.playVideo(); // Play the video if it's paused or ended
+            console.log("Video playing");
+        }
+    } else {
+        console.error("YouTube player is not initialized or does not support the required methods.");
+    }
 });
 var userIcon = document.getElementById('userIcon');
+
 var dropdownMenu = document.getElementById('dropdownMenu');
 
 userIcon.addEventListener('click', function () {
@@ -177,8 +237,10 @@ if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
 });
 function displayQuestion() {
     resetQuiz(); // Reset button states
-    if (currentQuestionIndex < questions.length) {
-        var question = questions[currentQuestionIndex];
+    if (questions) {
+        // Generate a random index for selecting a question
+    var randomIndex = Math.floor(Math.random() * questions.length);
+    var question = questions[randomIndex];  // Use the random index to get a question
 
         // Display question text
         questionText.innerHTML = question.question;
@@ -231,7 +293,7 @@ function displayQuestion() {
 
         showModal();
     } else {
-        console.log("All questions completed.");
+        console.log("No question Available");
     }
 }
 
@@ -239,23 +301,23 @@ function displayQuestion() {
 function showModal() {
     modal.classList.add('active');
     overlay.classList.add('active');
-    // if (player && player.pauseVideo) {
-    //     player.pauseVideo(); // Pause the video
-    // }
-    if (player.contentWindow) {
-        player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    if (player && player.pauseVideo) {
+        player.pauseVideo(); // Pause the video
     }
-}
+//     if (player.contentWindow) {
+//         player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+//     }
+ }
 
 function hideModal() {
     modal.classList.remove('active');
     overlay.classList.remove('active');
-    // if (player && player.playVideo) {
-    //     player.playVideo(); // Resume the video
-    // }
-    if (player.contentWindow) {
-        player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    if (player && player.playVideo) {
+        player.playVideo(); // Resume the video
     }
+    // if (player.contentWindow) {
+    //     player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    // }
 }
 
 function resetQuiz() {

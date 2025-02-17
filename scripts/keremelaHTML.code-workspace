@@ -3,6 +3,9 @@
 		{
 			"name": "keremelaHTML",
 			"path": ".."
+		},
+		{
+			"path": "../../../../OneDrive/Documents/keremela sidebar doc/firestore-insert"
 		}
 	],
 	"settings": {

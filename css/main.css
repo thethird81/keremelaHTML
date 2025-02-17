@@ -1,7 +1,7 @@
 *{
     margin: 0;
     padding: 0;
-    font-family:'poppins',sans-serif;
+    font-family:'Roboto',sans-serif;
     box-sizing: border-box;
 
 }
@@ -288,16 +288,9 @@ nav{
     height: 100vh; /* Make the sidebar full height */
     overflow-y: auto; /* Allow scrolling */
     padding: 10px;
-
-    /* Hide scrollbar for all browsers */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-/* Hide scrollbar for WebKit-based browsers (Chrome, Safari, Edge) */
-.right-sidebar::-webkit-scrollbar {
-    display: none;
-}
+
 .iframe-container {
     position: relative;
     width: 100%;

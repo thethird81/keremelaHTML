@@ -45,6 +45,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Display nickName in the navbar
     document.getElementById('nickName').innerText = nickName;
+    document.getElementById("title").innerText = nickName;
+    if (nickName === 'abye') {
+        // Change the user icon to the desired image
+        document.getElementById('userIcon').src = '/images/abyeScracher.JPG';
+    }
+    if (nickName === 'yabran') {
+        // Change the user icon to the desired image
+        document.getElementById('userIcon').src = '/images/yabran.JPG';
+    }
 
     // Generate age-specific sidebar
 
@@ -76,14 +85,22 @@ document.addEventListener('DOMContentLoaded', function () {
        // fetchVideosFromFirebase(selectedTopic.topic);
         //highlightSelectedTopic(selectedTopic.topic);
 
-        //fetchQuestionFromFirebase(grade);
+        fetchQuestionFromFirebase("grade3-year4");
 
 });
 function fetchQuestionFromFirebase(grade) {
     var db = firebase.firestore();
 
     // Dynamically construct the path using the provided grade
-    var questionsRef = db.collection('quiz').doc(grade).collection('questions');
+    var questionsRef = db.collection('grades')
+      .doc('3-4')
+      .collection('subjects')
+      .doc('Math')
+      .collection('contents')
+      .doc('Multiplication and division')
+      .collection('subcontents')
+      .doc('Multiplying  and Dividing 2 digit by 1 digit number')
+      .collection('questions');
 
     // Query the questions collection for the specified grade
     questionsRef.get()
@@ -98,21 +115,20 @@ function fetchQuestionFromFirebase(grade) {
         // Process each document in the snapshot
         querySnapshot.forEach(function(doc) {
           var questionData = doc.data();
+
           var question = {
             questionImage: questionData.questionImage || "",
             createdAt: questionData.createdAt || "",
-            grade: questionData.grade,
-            subject: questionData.subject,
-            topic: questionData.topic,
-            question: questionData.question,
-            options: questionData.options.map(function(option) {
+            question: questionData.question || "",
+            options: Array.isArray(questionData.options) ? questionData.options.map(function(option) {
               return {
-                text: option.text,
+                text: option.text || "",
                 optionImage: option.optionImage || ""
               };
-            }),
+            }) : [],
             correctAnswer: questionData.correctAnswer || 0
           };
+
           questions.push(question);
         });
 
@@ -126,17 +142,50 @@ function fetchQuestionFromFirebase(grade) {
   }
 
 
-signOutButton.addEventListener('click', function() {
-    localStorage.clear();
-    auth.signOut()
-        .then(function() {
-            console.log('User signed out successfully');
+// Function to update lastWatchedPath on sign-out
+function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
+    var db = firebase.firestore();
+    var userRef = db.collection("users").doc(userId);
 
-            window.location.href = '/pages/login-register.html';
-        })
-        .catch(function(error) {
-            console.error('Error signing out:', error);
-        });
+    return userRef.update({
+        lastWatchedPath: lastWatchedPath
+    })
+    .then(function() {
+        console.log("lastWatchedPath updated successfully!");
+    })
+    .catch(function(error) {
+        console.error("Error updating lastWatchedPath: ", error);
+    });
+}
+
+// Sign-out functionality
+signOutButton.addEventListener('click', function() {
+    var userId = localStorage.getItem('loggedInUserId');
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+
+    console.log("UserId:", userId);
+    console.log("LastWatchedPath:", lastWatchedPath);
+
+    if (userId && lastWatchedPath) {
+        updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
+            .then(function() {
+                // Clear localStorage and sign out after Firestore update completes
+                localStorage.clear();
+                auth.signOut()
+                    .then(function() {
+                        console.log('User signed out successfully');
+                        window.location.href = '/pages/login-register.html';
+                    })
+                    .catch(function(error) {
+                        console.error('Error signing out:', error);
+                    });
+            })
+            .catch(function(error) {
+                console.error("Error during Firestore update:", error);
+            });
+    } else {
+        console.error("UserId or LastWatchedPath is missing in localStorage.");
+    }
 });
 // Fetch videos from Firebase by topic
 function fetchVideosFromFirebase(topic) {

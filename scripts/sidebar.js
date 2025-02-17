@@ -142,6 +142,8 @@ function displayTitle(subcontentPath) {
 // Handle subcontent click event
 function handleSubcontentClick(grade, subject, content, subcontent) {
     var subcontentPath = "grades/" + grade + "/subjects/" + subject + "/contents/" + content + "/subcontents/" + subcontent;
+    var lastWatchedPath = grade + "/" + subject + "/" + content + "/" + subcontent;
+    localStorage.setItem('lastWatchedPath',lastWatchedPath);
     var title =  subject + "/" + content + "/" + subcontent;
     console.log(subcontentPath);
     displayTitle(title);
@@ -245,6 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
     var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+    console.log("lastWatchedPath  " + lastWatchedPath);
    var lastWatchedPathParts = lastWatchedPath.split("/");
     fetchSubjects();
 
@@ -261,6 +264,15 @@ document.addEventListener("DOMContentLoaded", function() {
   // Toggle the sidebar visibility when the menu icon is clicked
   var menuIcon = document.querySelector(".menu-icon");
   menuIcon.addEventListener("click", function() {
-    var sidebar = document.querySelector(".sidebar");
-    sidebar.classList.toggle("visible");
+    var sidebarContent = document.getElementById("sidebarContent");
+    if(sidebarContent){
+        var sidebar = document.querySelector(".sidebar");
+        sidebar.classList.toggle("visible");
+    }
+    else{
+        fetchSubjects();
+        var sidebar = document.querySelector(".sidebar");
+        sidebar.classList.toggle("visible");
+    }
+
   });
