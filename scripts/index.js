@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("title").innerText = nickName;
     if (nickName === 'abye') {
         // Change the user icon to the desired image
-        document.getElementById('userIcon').src = '/images/abyeScracher.JPG';
+        document.getElementById('userIcon').src = '/images/abye.JPG';
     }
     if (nickName === 'yabran') {
         // Change the user icon to the desired image

@@ -99,8 +99,10 @@ function fetchSubjects() {
 // Fetch multiple videos from YouTube API (greater than 3 minutes)
 function fetchYouTubeVideos(query, maxResults, callback) {
     var API_KEY = 'AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM';
-    var URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + encodeURIComponent(query) +
-              "&type=video&maxResults=" + maxResults + "&key=" + API_KEY;
+    // var URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + encodeURIComponent(query) +
+    //           "&type=video&maxResults=" + maxResults + "&key=" + API_KEY;
+              var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
+              "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + maxResults + "&type=video";
 
     fetch(URL)
         .then(function (response) {
@@ -188,7 +190,7 @@ if (grade == 'Pre-KG')
 }else if(grade == 'KG'){
     query = "grade " + grade +  " " + subcontent + " todler educational video, songs  " ;
 }else if('3-4'){
-    query = "grade " + grade +  " " + subcontent + "   for kids " ;
+    query = "grade " + grade +  " " + subcontent + "  for kids songs " ;
 }else{
     query = "grade " + grade +  " " + subcontent;
 }

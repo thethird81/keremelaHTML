@@ -47,6 +47,12 @@ function onYouTubeIframeAPIReady() {
     console.log("YouTube IFrame API is ready!" + videoId );
     player = new YT.Player("youtube-player", {
         videoId: videoId,
+        playerVars: {
+            'rel': 0, // Disable related videos
+            'autoplay': 1, // Auto-play the video
+            'showinfo': 0, // Optional: Hide video info at the start
+            'modestbranding': 1, // Optional: Limits YouTube branding
+          },
 
         playerVars: { enablejsapi: 1 },
         events: {
@@ -92,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (nickName === 'abye') {
         // Change the user icon to the desired image
-        document.getElementById('userIcon').src = '/images/abyeScracher.JPG';
+        document.getElementById('userIcon').src = '/images/abye.JPG';
     }
     if (nickName === 'yabran') {
         // Change the user icon to the desired image
