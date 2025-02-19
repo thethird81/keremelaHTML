@@ -219,7 +219,7 @@ nav{
 .container {
     background: #060101;
     padding-left: 2%;
-    padding-right: 2%;
+
     padding-top: 10px;
     padding-bottom: 20px;
     position: relative; /* Ensure the container is the reference for fixed positioning */
@@ -295,16 +295,7 @@ nav{
 
 }
 
-/* .iframe-container #youtube-player {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 2px ;
-    z-index: 0;
 
-} */
 #youtube-player {
     position: absolute;
     top: 0;
@@ -324,7 +315,17 @@ nav{
     background-color: rgba(0, 0, 0, 0); /* Semi-transparent overlay */
     z-index: 1;
 }
+.youtube-logo-overlay {
+    position: absolute;
+    bottom: 0;  /* Start from the bottom */
+    right: 0;   /* Align to the right */
+    width: 120px; /* Cover half of the iframe width */
+    height: 36px; /* Exact height to cover only the bottom 56px */
+    background-color: rgba(0,0, 0, 0); /* Transparent */
+    z-index: 2;
 
+
+}
 .side-video-list{
 
     margin-bottom: 8px;
