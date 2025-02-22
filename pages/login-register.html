@@ -33,7 +33,7 @@
         <div id="signUpMessage" class="messageDiv" style="display:none;"></div>
         <div class="input-group">
            <i class="fas fa-user"></i>
-           <input type="text"  id="nickName" placeholder="NICK NAME" required>
+           <input type="text"  id="nickName" placeholder="User Name" required>
 
 
         </div>
@@ -48,10 +48,12 @@
             <input type="password" id="rPassword"  placeholder="Password" required>
 
         </div>
-        <p>Age</p>
-        <select id="age">
-          <!-- Age options will be populated here -->
-        </select>
+        <div class="grade-dropdown">
+
+          <select id="gradeSelect" onchange="getSelectedKey()">
+              <option value="" disabled selected>Select a Grade</option>
+          </select>
+      </div>
 
        <button class="btn" id="submitSignUp" >Sign Up</button>
       </form>

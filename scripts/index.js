@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
 
     // Step 2: Parse the retrieved data (assuming it's stored as a JSON string)
+    if(storedSelectedQuizList)
     var selectedQuizList = JSON.parse(storedSelectedQuizList);
     //console.log("selectedQuizList" + selectedQuizList);
     var videoList = JSON.parse(localStorage.getItem('videoList'));
@@ -87,13 +88,38 @@ document.addEventListener('DOMContentLoaded', function () {
             dropdownMenu.style.display = 'none';
         }
     });
-       // fetchVideosFromFirebase(selectedTopic.topic);
-        //highlightSelectedTopic(selectedTopic.topic);
 
-        fetchQuestionsForSelectedPaths(selectedQuizList);
+
+        if(selectedQuizList =!null)
+        {
+            if(selectedQuizList.length > 0)
+            {
+                fetchQuestionsForSelectedPaths(selectedQuizList);
+            }
+
+
+
+
+        else{
+       // fetch question based on users grade
+       console.log("fetch question based on users grade");
+       var questionRef = db.collectionGroup("questions").where("grade", "==", grade).limit(50);
+       questionRef.get().then((querySnapshot) => {
+        var questions = querySnapshot.docs.map(function (doc) {
+            return doc.data();
+
+        });
+
+        localStorage.setItem("questions", JSON.stringify(questions));
+
+    }).catch((error) => {
+        console.log("Error getting documents: ", error);
+    });
+        }}
 
 });
 function fetchQuestionsForSelectedPaths(selectedQuizList) {
+
     var db = firebase.firestore();
     var allQuestions = [];
     var fetchPromises = []; // Store all fetch promises
@@ -193,7 +219,7 @@ signOutButton.addEventListener('click', function() {
     console.log("UserId:", userId);
     console.log("LastWatchedPath:", lastWatchedPath);
 
-    if (userId && lastWatchedPath) {
+    if (userId ) {
         updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
             .then(function() {
                 // Clear localStorage and sign out after Firestore update completes

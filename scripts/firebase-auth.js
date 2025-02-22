@@ -33,41 +33,69 @@ function showMessage(message, divId) {
      // Age List
      var ageList = ["0-2","3-4","5-7","8-10","11+"];
 
-
      var grade = {
-        "Pre School": "Pre School",
-        "KG": "KG",
-        "1-2": "GRADE 1 (YEAR 2)",
-        "2-3": "GRADE 2 (YEAR 3)",
-        "3-4": "GRADE 3 (YEAR 4)",
-        "4-5": "GRADE 4 (YEAR 5)",
-        "5-6": "GRADE 5 (YEAR 6)",
-        "6-7": "GRADE 6 (YEAR 7)",
-        "7-8": "GRADE 7 (YEAR 8)",
-        "8-9": "GRADE 8 (YEAR 9)",
-        "9-10": "GRADE 9 (YEAR 10)",
-        "10-11": "GRADE 10 (YEAR 11)",
-        "11-12": "GRADE 11 (YEAR 12)",
-        "12-13": "GRADE 12 (YEAR 13)"
-      }
-     // Populate age dropdown
-     var ageSelect = document.getElementById('ageSelect');
-     ageList.forEach(function(ageGroup) {
-         var option = document.createElement('option');
-         option.value = ageGroup;
-         option.textContent = ageGroup;
-         ageSelect.appendChild(option);
-     });
-     var ageSel= document.getElementById('age');
-     ageList.forEach(function(age) {
-         var option = document.createElement('option');
-         option.value = age;
-         option.textContent = age;
-         ageSel.appendChild(option);
-     });
+        "Pre-KG": "Pre-K - Early Years 1",
+        "KG": "Kg - Early Years 2",
+        "3-4": "Grade 3-Year 4",
+        "12-13": "Grade 12-Year 13"
+    };
+    // var grade = {
+    //     "Toddler": "Toddler",
+    //     "Pre-KG": "Pre-K - Early Years 1",
+    //     "KG": "Kg - Early Years 2",
+    //     "1-2": "Grade 1-Year 2",
+    //     "2-3": "Grade 2-Year 3",
+    //     "3-4": "Grade 3-Year 4",
+    //     "4-5": "Grade 4-Year 5",
+    //     "5-6": "Grade 5-Year 6",
+    //     "6-7": "Grade 6-Year 7",
+    //     "7-8": "Grade 7-Year 8",
+    //     "8-9": "Grade 8-Year 9",
+    //     "9-10": "Grade 9-Year 10",
+    //     "10-11": "Grade 10-Year 11",
+    //     "11-12": "Grade 11-Year 12",
+    //     "12-13": "Grade 12-Year 13"
+    // };
+    //  // Populate age dropdown
+    //  var ageSelect = document.getElementById('ageSelect');
+    //  ageList.forEach(function(ageGroup) {
+    //      var option = document.createElement('option');
+    //      option.value = ageGroup;
+    //      option.textContent = ageGroup;
+    //      ageSelect.appendChild(option);
+    //  });
+    //  var ageSel= document.getElementById('age');
+    //  ageList.forEach(function(age) {
+    //      var option = document.createElement('option');
+    //      option.value = age;
+    //      option.textContent = age;
+    //      ageSel.appendChild(option);
+    //  });
+     // Populate the dropdown list
+     function populateDropdown() {
+        var select = document.getElementById("gradeSelect");
+        for (var key in grade) {
+            if (grade.hasOwnProperty(key)) {
+                var option = document.createElement("option");
+                option.value = key;  // Key as value
+                option.text = grade[key];  // Display value
+                select.appendChild(option);
+            }
+        }
+    }
 
+    // Display the selected key
+    function getSelectedKey() {
+        var select = document.getElementById("gradeSelect");
+        var selectedKey = select.value;
+       // document.getElementById("selectedKey").innerHTML = "Selected Key: " + (selectedKey || "None");
+      console.log(selectedKey);
+    }
 
-
+    // Initialize the dropdown
+    window.onload = function () {
+        populateDropdown();
+    };
 
 // Sign Up functionality
 var signUp = document.getElementById('submitSignUp');
@@ -76,7 +104,7 @@ signUp.addEventListener('click', function(event) {
     var email = document.getElementById('rEmail').value;
     var password = document.getElementById('rPassword').value;
     var nickName = document.getElementById('nickName').value;
-    var age = document.getElementById('age').value;
+    var grade =document.getElementById("gradeSelect").value;
 
 
 
@@ -89,7 +117,9 @@ signUp.addEventListener('click', function(event) {
             var userData = {
                 email: email,
                 nickName: nickName,
-                age:age
+                grade:grade,
+                lastWatchedPath:"",
+                selectedQuizList:[]
 
             };
 
@@ -100,8 +130,10 @@ signUp.addEventListener('click', function(event) {
                     localStorage.setItem('loggedInUserId', user.uid);
                     localStorage.setItem('age', userData.age); // Store age in localStorage
                     localStorage.setItem('nickName', userData.nickName);
-                    localStorage.setItem('grade', '3-4');
+                    localStorage.setItem('grade', userData.grade);
                     localStorage.setItem("isFirstLogin", "yes");
+                    localStorage.setItem('selectedQuizList', []);
+                    localStorage.setItem('lastWatchedPath', "");
                     window.location.href = '/index.html';
 
                 })

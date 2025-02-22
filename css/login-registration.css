@@ -278,3 +278,72 @@ button:hover {
         padding: 8px;
     }
 }
+
+
+
+
+/* Grade Dropdown Container */
+.grade-dropdown {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+/* Dropdown Label */
+.grade-dropdown label {
+    display: block;
+    font-size: 1rem;
+    color: #757575;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Select Dropdown Style */
+.grade-dropdown select {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: transparent;
+    border: 2px solid #757575;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    appearance: none; /* Hides default dropdown arrow in some browsers */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%23575757" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* On Focus */
+.grade-dropdown select:focus {
+    outline: none;
+    border-color: #540a63;
+    box-shadow: 0 0 5px rgba(84, 10, 99, 0.5);
+}
+
+/* Option Styling */
+.grade-dropdown select option {
+    padding: 10px;
+    font-size: 1rem;
+    color: #333;
+    background: white;
+}
+
+/* Hover Effect */
+.grade-dropdown select:hover {
+    border-color: #4d4dbd;
+}
+
+/* Error State (Optional) */
+.grade-dropdown select.error {
+    border-color: #ff4d4d;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .grade-dropdown select {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+        background-position: right 10px center;
+    }
+}

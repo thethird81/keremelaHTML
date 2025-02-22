@@ -191,7 +191,7 @@ signOutButton.addEventListener('click', function() {
     console.log("UserId:", userId);
     console.log("LastWatchedPath:", lastWatchedPath);
 
-    if (userId && lastWatchedPath) {
+    if (userId ) {
         updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
             .then(function() {
                 // Clear localStorage and sign out after Firestore update completes

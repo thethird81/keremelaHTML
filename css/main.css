@@ -219,7 +219,7 @@ nav{
 .container {
     background: #060101;
     padding-left: 2%;
-
+    min-height: 100vh;
     padding-top: 10px;
     padding-bottom: 20px;
     position: relative; /* Ensure the container is the reference for fixed positioning */
@@ -403,4 +403,34 @@ nav{
 .dropdown-menu button:hover {
 
     color: #ed3833;
+}
+
+/*---------------------------- welcome ----------------------------------*/
+ /* Basic styling for the text */
+ #welcomeMessage {
+    display: none; /* Hidden by default */
+    font-size: 28px;
+    color: #0078d4;
+    text-align: center;
+    margin-top: 100px;
+    font-family: Arial, sans-serif;
+}
+
+/* Blinking animation (for older browsers) */
+@-webkit-keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Apply the animation */
+#welcomeMessage {
+    -webkit-animation: blink 2s infinite; /* For older WebKit browsers */
+    animation: blink 2s infinite;
 }
