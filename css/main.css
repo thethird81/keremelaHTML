@@ -19,6 +19,13 @@ img{
 .flex-div{
     display: flex;
     align-items: center;
+
+}
+.flex-div-favorite{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
 }
 nav{
     padding: 10px 2%;
@@ -57,17 +64,53 @@ nav{
 .nav-middle .mic-icon{
     width: 16px;
 }
-.nav-middle .search-box{
-    border: 1px solid #ccc;
+.nav-middle .search-box {
+    border: 1px solid #572929;
     margin-right: 15px;
     padding: 8px 12px;
     border-radius: 25px;
+    position: relative;
+    background-color: #363434;
 }
-.nav-middle .search-box input{
+
+.nav-middle .search-box input {
     width: 400px;
     border: 0;
     outline: 0;
-    outline: transparent;
+    color: #ffffff;
+    background-color: transparent;
+    padding: 5px;
+}
+
+.nav-middle .search-box .results-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100%;
+    background-color: rgb(63, 59, 59);
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    color: #ffffff;
+}
+
+.nav-middle .search-box .results-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-middle .search-box .results-dropdown ul li {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.nav-middle .search-box .results-dropdown ul li:hover {
+    background-color: #f0f0f0;
 }
 .nav-middle .search-box img{
     width: 10px;
@@ -100,6 +143,30 @@ nav{
 
 }
 
+.favorite-videos-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #ffcc00; /* Bright yellow */
+    color: #333; /* Dark text for contrast */
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.favorite-videos-btn:hover {
+    background-color: #ffb700; /* Slightly darker yellow */
+    transform: scale(1.05); /* Slight zoom effect */
+}
+
+.favorite-videos-btn:active {
+    background-color: #e6a800; /* Even darker yellow when clicked */
+    transform: scale(0.98); /* Click effect */
+}
 
 /* Ensure sidebar content fits and scrolls */
 #sidebarContent {
@@ -306,6 +373,15 @@ nav{
     z-index: 0;
 }
 
+.favorite-btn {
+
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    outline: none;
+    color: #ddd;
+}
 .iframe-controls-overlay {
     position: absolute;
     top: 0;
@@ -319,12 +395,19 @@ nav{
     position: absolute;
     bottom: 0;  /* Start from the bottom */
     right: 0;   /* Align to the right */
-    width: 120px; /* Cover half of the iframe width */
+    width: 170px; /* Cover half of the iframe width */
     height: 36px; /* Exact height to cover only the bottom 56px */
     background-color: rgba(0,0, 0, 0); /* Transparent */
     z-index: 2;
 
 
+}
+.favorite-btn {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    font-size:36px ;
+    z-index: 3;
 }
 .side-video-list{
 
@@ -348,6 +431,9 @@ nav{
     padding-right: 1%
     }
     .nav-right img{
+        display: none;
+    }
+    .nav-middle{
         display: none;
     }
     .nav-right #userIcon {
@@ -404,6 +490,7 @@ nav{
 
     color: #ed3833;
 }
+
 
 /*---------------------------- welcome ----------------------------------*/
  /* Basic styling for the text */

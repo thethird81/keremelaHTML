@@ -10,9 +10,6 @@ var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
 var age ;
 
-
-
-
 var db = firebase.firestore();
  var auth = firebase.auth();
    // Listen for authentication state changes
@@ -35,12 +32,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var age = localStorage.getItem('age');
     var grade = localStorage.getItem('grade');
     var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
+    var userId = localStorage.getItem('gradloggedInUserIde');
+
 
     // Step 2: Parse the retrieved data (assuming it's stored as a JSON string)
-    if(storedSelectedQuizList)
-    var selectedQuizList = JSON.parse(storedSelectedQuizList);
-    //console.log("selectedQuizList" + selectedQuizList);
-    var videoList = JSON.parse(localStorage.getItem('videoList'));
+
+
+
+   var videoList = JSON.parse(localStorage.getItem('videoList'));
+
     updateVideoList(videoList);
 
     if (!nickName || !age) {
@@ -90,16 +90,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-        if(selectedQuizList =!null)
-        {
+    if (storedSelectedQuizList !== null)
+        {  var selectedQuizList = JSON.parse(storedSelectedQuizList);
+
+
             if(selectedQuizList.length > 0)
             {
-                fetchQuestionsForSelectedPaths(selectedQuizList);
+                //fetchQuestionsForSelectedPaths(selectedQuizList);
+                fetchAndMergeQuizzes();
             }
+            else{
+                // fetch question based on users grade
+                console.log("fetch question based on users grade");
+                var questionRef = db.collectionGroup("questions").where("grade", "==", grade).limit(50);
+                questionRef.get().then((querySnapshot) => {
+                 var questions = querySnapshot.docs.map(function (doc) {
+                     return doc.data();
 
+                 });
 
+                 localStorage.setItem("questions", JSON.stringify(questions));
 
-
+             }).catch((error) => {
+                 console.log("Error getting documents: ", error);
+             });
+                 }
+        }
         else{
        // fetch question based on users grade
        console.log("fetch question based on users grade");
@@ -115,7 +131,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }).catch((error) => {
         console.log("Error getting documents: ", error);
     });
-        }}
+        }
+
+
+
 
 });
 function fetchQuestionsForSelectedPaths(selectedQuizList) {
@@ -194,7 +213,52 @@ function fetchQuestionsForSelectedPaths(selectedQuizList) {
     });
 }
 
+function fetchAndMergeQuizzes() {
+    var userId = localStorage.getItem("loggedInUserId");
+    if (!userId) {
+        console.error("User not logged in.");
+        return;
+    }
 
+    var userRef = db.collection("users").doc(userId);
+    userRef.get().then(function (doc) {
+        if (!doc.exists) {
+            console.error("User document not found.");
+            return;
+        }
+
+        var selectedQuizList = doc.data().selectedQuizList || [];
+        if (selectedQuizList.length === 0) {
+            console.log("No quizzes selected.");
+            localStorage.setItem("questions", JSON.stringify([]));
+            return;
+        }
+
+        var mergedQuestions = [];
+        var fetchPromises = [];
+
+        selectedQuizList.forEach(function (subcontentId) {
+            var quizRef = db.collection("subcontents").doc(subcontentId);
+            var promise = quizRef.get().then(function (subDoc) {
+                if (subDoc.exists && subDoc.data().quiz) {
+                    mergedQuestions = mergedQuestions.concat(subDoc.data().quiz);
+                }
+            }).catch(function (error) {
+                console.error("Error fetching quiz:", error);
+            });
+
+            fetchPromises.push(promise);
+        });
+
+        Promise.all(fetchPromises).then(function () {
+            localStorage.setItem("questions", JSON.stringify(mergedQuestions));
+            console.log("Merged quiz saved to local storage:", mergedQuestions);
+        });
+
+    }).catch(function (error) {
+        console.error("Error fetching user document:", error);
+    });
+}
 // Function to update lastWatchedPath on sign-out
 function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
     var db = firebase.firestore();
@@ -222,6 +286,7 @@ signOutButton.addEventListener('click', function() {
     if (userId ) {
         updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
             .then(function() {
+                updateFavoritesOnSignOut();
                 // Clear localStorage and sign out after Firestore update completes
                 localStorage.clear();
                 auth.signOut()
@@ -309,33 +374,61 @@ function getRandomTopic() {
     var randomIndex = Math.floor(Math.random() * sideBarList.length);
     return sideBarList[randomIndex];
 }
+// Function to update user favorites in Firestore on sign out (ES5 Compatible)
+function updateFavoritesOnSignOut() {
+    var userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        console.error("No user logged in.");
+        return;
+    }
+
+    var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+    // Update Firestore with the latest favorite videos
+    db.collection("users").doc(userId).set(
+        { favorites: favorites },
+        { merge: true }  // Merge with existing data
+    ).then(function () {
+        console.log("Favorites successfully updated in Firestore.");
+
+
+
+    }).catch(function (error) {
+        console.error("Error updating favorites:", error);
+    });
+}
 
 // Update video list
 function updateVideoList(videos) {
     var listContainer = document.querySelector(".list-container");
     listContainer.innerHTML = ""; // Clear existing videos
-if(videos != null)
-    videos.forEach(function (video) {
-        var videoElement = document.createElement("div");
-        videoElement.classList.add("vid-list");
 
-        // Select thumbnail resolution (prefer medium, fallback to default)
-        var thumbnail = video.thumbnails && video.thumbnails.high ? video.thumbnails.medium : video.thumbnails && video.thumbnails.default;
 
-        // Correctly append `enablejsapi=1` to the URL
-        videoElement.innerHTML = "<a href='pages/play-video.html?videoId=" + video.videoId + "&enablejsapi=1'>" +
-            "<img src='" + thumbnail + "' alt='' class='thumbnail'>" +
-            "</a>" +
-            "<div class='flex-div'>"  +
-            "<div class='vid-info'>" +
-            "<a href='pages/play-video.html?videoId=" + video.videoId + "' >" + video.title + "</a>" +
-            "<p>" + video.channelTitle + "</p>" +
-            "</div>" +
-            "</div>";
+    if (videos != null) {
+        videos.forEach(function (video) {
+            var videoElement = document.createElement("div");
+            videoElement.classList.add("vid-list");
 
-        listContainer.appendChild(videoElement);
-    });
+            // Select thumbnail resolution (prefer medium, fallback to default)
+            var thumbnail = video.thumbnails && video.thumbnails.high ? video.thumbnails.medium : video.thumbnails && video.thumbnails.default;
+
+            // Create video item
+            videoElement.innerHTML = "<a href='pages/play-video.html?videoId=" + video.videoId + "&enablejsapi=1'>" +
+                "<img src='" + thumbnail + "' alt='' class='thumbnail'>" +
+                "</a>" +
+                "<div class='flex-div-favorite'>" +
+                "<div class='vid-info'>" +
+                "<a href='pages/play-video.html?videoId=" + video.videoId + "'>" + video.title + "</a>" +
+                "<p>" + video.channelTitle + "</p>" +
+                "</div></div>";
+
+
+
+            listContainer.appendChild(videoElement);
+        });
+    }
 }
+
 
 
 

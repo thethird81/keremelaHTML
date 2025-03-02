@@ -34,10 +34,10 @@ function showMessage(message, divId) {
      var ageList = ["0-2","3-4","5-7","8-10","11+"];
 
      var grade = {
-        "Pre-KG": "Pre-K - Early Years 1",
+        "PreKG": "Pre-K - Early Years 1",
         "KG": "Kg - Early Years 2",
-        "3-4": "Grade 3-Year 4",
-        "12-13": "Grade 12-Year 13"
+        "3": "Grade 3-Year 4",
+        "12": "Grade 12-Year 13"
     };
     // var grade = {
     //     "Toddler": "Toddler",
@@ -119,7 +119,8 @@ signUp.addEventListener('click', function(event) {
                 nickName: nickName,
                 grade:grade,
                 lastWatchedPath:"",
-                selectedQuizList:[]
+                selectedQuizList:[],
+                favorites:[]
 
             };
 
@@ -177,8 +178,10 @@ signIn.addEventListener('click', function(event) {
                     localStorage.setItem('nickName', userData.nickName); // Store nickname
                     showMessage('Login is successful', 'signInMessage');
                     localStorage.setItem('grade', userData.grade);
+
                     // Assuming userData.selectedQuizList is an array
                     localStorage.setItem('selectedQuizList', JSON.stringify(userData.selectedQuizList));
+                    localStorage.setItem('favorites', JSON.stringify(userData.favorites));
                     localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
                     localStorage.setItem("isFirstLogin", "yes");
 
@@ -203,3 +206,4 @@ signIn.addEventListener('click', function(event) {
             }
         });
 });
+

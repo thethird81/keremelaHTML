@@ -6,7 +6,8 @@ if (!Object.values) {
         });
     };
 }
-
+var allSubcontents=[];
+var grade = localStorage.getItem('grade');
 // Initialize Firebase (replace with your own config)
 var firebaseConfig = {
     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
@@ -23,82 +24,133 @@ var firebaseConfig = {
 
 
 
-// Fetch Data from Firestore
+// Fetch Data from Firestore or use cached data from localStorage
 function fetchSubjects() {
-   // var grade = "3-4"; // Example: Fetch subjects for Grade 3-4
-   var grade = localStorage.getItem('grade');
 
     var sidebarContent = document.getElementById("sidebarContent");
-    console.log("fetching subjects ....");
 
-    db.collection("grades").doc(grade).collection("subjects").get().then(function (subjectSnapshot) {
-        subjectSnapshot.forEach(function (subjectDoc) {
-            var subjectData = subjectDoc.data();
-            var subjectDiv = document.createElement("div");
 
-            // Create Subject Collapsible Button
-            var subjectButton = document.createElement("button");
-            subjectButton.textContent = subjectData.subject;
-            subjectButton.classList.add("collapsible");
-
-            // Container for Units
-            var unitDiv = document.createElement("div");
-            unitDiv.classList.add("content");
-
-            // Fetch Units inside Subject
-            db.collection("grades").doc(grade).collection("subjects").doc(subjectDoc.id).collection("contents").get().then(function (unitSnapshot) {
-                unitSnapshot.forEach(function (unitDoc) {
-                    var unitData = unitDoc.data();
-                    var unitButton = document.createElement("button");
-                    unitButton.textContent = unitData.unit;
-                    unitButton.classList.add("collapsible");
-
-                    // Container for Subunits
-                    var subUnitDiv = document.createElement("div");
-                    subUnitDiv.classList.add("content");
-
-                    // Fetch Subunits inside Unit
-                    db.collection("grades").doc(grade).collection("subjects").doc(subjectDoc.id).collection("contents").doc(unitDoc.id).collection("subcontents").get().then(function (subUnitSnapshot) {
-                        subUnitSnapshot.forEach(function (subUnitDoc) {
-
-                            var subUnitData = subUnitDoc.data();
-                            var subUnitPara = document.createElement("div");
-                            subUnitPara.classList.add("subunits");
-                            subUnitPara.textContent = subUnitData.subcontent;
-                            // Add Click Listener to Show Details
-
-                            subUnitPara.addEventListener("click", function () {
-                                handleSubcontentClick(grade, subjectData.subject, unitData.unit, subUnitData.subcontent);
-
-                                                var sidebar = document.querySelector(".sidebar");
-                                                sidebar.classList.toggle("visible");
-
-                            });
-                            subUnitDiv.appendChild(subUnitPara);
-                        });
-                    });
-
-                    // Toggle Unit Collapsible
-                    unitButton.addEventListener("click", function () {
-                        subUnitDiv.style.display = subUnitDiv.style.display === "block" ? "none" : "block";
-                    });
-
-                    unitDiv.appendChild(unitButton);
-                    unitDiv.appendChild(subUnitDiv);
-                });
-            });
-
-            // Toggle Subject Collapsible
-            subjectButton.addEventListener("click", function () {
-                unitDiv.style.display = unitDiv.style.display === "block" ? "none" : "block";
-            });
-
-            subjectDiv.appendChild(subjectButton);
-            subjectDiv.appendChild(unitDiv);
-            sidebarContent.appendChild(subjectDiv);
+    // Check if data exists in localStorage
+    var cachedData = localStorage.getItem('sidebarData_Grade_'+ grade);
+    if (cachedData) {
+        console.log("Using cached sidebar data from localStorage" );
+        var data = JSON.parse(cachedData);
+        renderSubjects(data.subjects); // Render subjects using cached data
+    } else {
+        console.log("Fetching sidebar data from Firestore");
+        // Fetch the document containing the subjects and their contents
+        db.collection("sidebar_contents").doc("Sidebar_Grade_" + grade).get().then(function (doc) {
+            if (doc.exists) {
+                var data = doc.data();
+                // Save data to localStorage for future use
+                localStorage.setItem('sidebarData_Grade_' + grade, JSON.stringify(data));
+                renderSubjects(data.subjects); // Render subjects using fetched data
+            } else {
+                console.log("No such document!");
+            }
+        }).catch(function (error) {
+            console.log("Error getting document:", error);
         });
-    });
+    }
 }
+
+// Function to render subjects, contents, and subcontents
+function renderSubjects(subjects) {
+
+    var sidebarContent = document.getElementById("sidebarContent");
+    sidebarContent.innerHTML = ""; // Clear existing content
+
+    // Loop through each subject
+    subjects.forEach(function (subject) {
+        var subjectDiv = document.createElement("div");
+
+        // Create Subject Collapsible Button
+        var subjectButton = document.createElement("button");
+        subjectButton.textContent = subject.subject;
+        subjectButton.classList.add("collapsible");
+
+        // Container for Contents
+        var contentDiv = document.createElement("div");
+        contentDiv.classList.add("content");
+
+        // Loop through each content in the subject
+        subject.contents.forEach(function (content) {
+            var contentButton = document.createElement("button");
+            contentButton.textContent = content.content;
+            contentButton.classList.add("collapsible");
+
+            // Container for Subcontents
+            var subContentDiv = document.createElement("div");
+            subContentDiv.classList.add("content");
+
+            // Loop through each subcontent in the content
+            content.subcontents.forEach(function (subcontent) {
+                var subContentPara = document.createElement("div");
+                subContentPara.classList.add("subunits");
+                subContentPara.textContent = subcontent;
+
+                // Add Click Listener to Show Details
+                subContentPara.addEventListener("click", function () {
+                    console.log("subcontent =>" + subcontent);
+                    handleSubcontentClick(grade, subject.subject, content.content, subcontent);
+                    var sidebar = document.querySelector(".sidebar");
+                    sidebar.classList.toggle("visible");
+                });
+
+                subContentDiv.appendChild(subContentPara);
+            });
+
+            // Toggle Content Collapsible
+            contentButton.addEventListener("click", function () {
+                subContentDiv.style.display = subContentDiv.style.display === "block" ? "none" : "block";
+            });
+
+            contentDiv.appendChild(contentButton);
+            contentDiv.appendChild(subContentDiv);
+        });
+
+        // Toggle Subject Collapsible
+        subjectButton.addEventListener("click", function () {
+            contentDiv.style.display = contentDiv.style.display === "block" ? "none" : "block";
+        });
+
+        subjectDiv.appendChild(subjectButton);
+        subjectDiv.appendChild(contentDiv);
+        sidebarContent.appendChild(subjectDiv);
+    });
+
+    displayFavouriteButton() ;
+}
+
+
+
+function displayFavouriteButton() {
+ // Draw a line separator at the end of the content
+ var separator = document.createElement("hr");
+ separator.style.margin = "10px 0";
+ sidebarContent.appendChild(separator);
+
+ // Create "Favorite Videos" button
+ var favoriteButton = document.createElement("button");
+ favoriteButton.textContent = "Show Favorite Videos";
+ favoriteButton.classList.add("favorite-videos-btn");
+ favoriteButton.addEventListener("click", fetchFavoriteVideos);
+ sidebarContent.appendChild(favoriteButton);
+
+}
+// Fetch favorite videos from Firestore using collectionGroup
+function fetchFavoriteVideos() {
+    var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    localStorage.setItem("videoList", JSON.stringify(favorites));
+    if (favorites.length === 0) {
+        console.log("No favorite videos found.");
+        updateVideoList([]); // Clear the list if no favorites exist
+        return;
+    }
+
+    window.location.href = '/index.html';
+}
+
 
 
 // Fetch multiple videos from YouTube API (greater than 3 minutes)
@@ -217,164 +269,264 @@ function displayTitle(subcontentPath) {
         console.log("Element not found.");
     }
 }
-function getQuery(grade, subject, subcontent) {
+function getQuery(grade, subcontent) {
     var query = "";
 
     if (grade === 'Pre-KG') {
-        query = "grade " + grade + " " + subject + " " + subcontent + " toddler educational songs";
+        query = "grade " + grade  + " " + subcontent + " toddler educational songs";
     } else if (grade === 'KG') {
-        query = "grade " + grade + " " + subject + " " + subcontent + " toddler educational video, songs";
-    } else if (grade === '3-4') {
-        var splitGrade = grade.split('-');
-        query = "grade " + splitGrade[0] + " " + subject + " " + subcontent + " for kids songs";
+        query = "grade " + grade  + " " + subcontent + " toddler educational video, songs";
+    } else if (grade === '3') {
+
+        query = "grade " + grade  + " " + subcontent ;
     } else {
-        var splitGrade = grade.split('-');
-        query = "grade " + splitGrade[0] + " " + subject + " " + subcontent
+
+        query = "grade " + grade  + " " + subcontent
     }
 
     return query;
 }
-// Handle subcontent click event
+
+function getLastWatchedVideos(){
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+    var lastWatchedPath = lastWatchedPath.split("_")[0] + "_" + lastWatchedPath.split("_")[3] ;
+
+      // Reference to the subcontent document
+      var subcontentRef = db.collection("subcontents")
+      .doc( lastWatchedPath  );
+    subcontentRef.get()
+    .then(function (doc) {
+        if (doc.exists && doc.data().videos) {
+            // If videos are already available in the 'videos' field
+            console.log("Fetching videos from subcontent document...");
+            var videos = doc.data().videos;
+            console.log("Fetched Videos:", videos);
+
+            // Save the fetched videos to localStorage
+            localStorage.setItem("videoList", JSON.stringify(videos));
+
+            // Redirect to the main page if not already there
+            if (window.location.pathname !== "/index.html") {
+                window.location.href = "/index.html";
+            }
+
+            // Update the video list on the page
+            updateVideoList(videos);
+        }
+        else{
+            console.log("No last watched videos found");
+        }
+    }).catch(function (error) {
+        console.error("Error fetching subcontent document:", error);
+    });
+}
 function handleSubcontentClick(grade, subject, content, subcontent) {
     var subcontentPath = "grades/" + grade + "/subjects/" + subject + "/contents/" + content + "/subcontents/" + subcontent;
-    var lastWatchedPath = grade + "/" + subject + "/" + content + "/" + subcontent;
-    localStorage.setItem('lastWatchedPath',lastWatchedPath);
-    var title =  subject
+    var lastWatchedPath = grade +  "_" + subject +  "_" + content+  "_" + subcontent;
+    localStorage.setItem('lastWatchedPath', lastWatchedPath);
+    var title = subject;
     console.log(subcontentPath);
     displayTitle(title);
-    var videosRef = db.collection("grades")
-        .doc(grade)
-        .collection("subjects")
-        .doc(subject)
-        .collection("contents")
-        .doc(content)
-        .collection("subcontents")
-        .doc(subcontent)
-        .collection("videos");
 
-    // Check if 'videos' collection has any documents
-    videosRef.get()
-        .then(function (querySnapshot) {
-            if (!querySnapshot.empty) {
-                console.log("Fetching videos from Firestore...");
-                var videos = querySnapshot.docs.map(function (doc) {
-                    return doc.data();
-                });
+    // Reference to the subcontent document
+    var subcontentRef = db.collection("subcontents")
+        .doc(  grade + "_" + subcontent  );
+
+    // Check if the subcontent document exists and has a 'videos' field
+    subcontentRef.get()
+        .then(function (doc) {
+            if (doc.exists && doc.data().videos) {
+                // If videos are already available in the 'videos' field
+                console.log("Fetching videos from subcontent document...");
+                var videos = doc.data().videos;
                 console.log("Fetched Videos:", videos);
+
                 // Save the fetched videos to localStorage
                 localStorage.setItem("videoList", JSON.stringify(videos));
 
-               if (window.location.pathname !== "/index.html") {
+                // Redirect to the main page if not already there
+                if (window.location.pathname !== "/index.html") {
                     window.location.href = "/index.html";
-                    }
+                }
+
+                // Update the video list on the page
                 updateVideoList(videos);
-                // if(localStorage.getItem("isFirstLogin")=="no")
-                //         {
-                //             var sidebar = document.querySelector(".sidebar");
-                //             sidebar.classList.toggle("visible");
-                //         }
-
             } else {
-                console.log("No videos collection found. Fetching from YouTube...");
-                var query = getQuery(grade, subject, subcontent);
-// if (grade == 'Pre-KG')
-// {
-//     query = "grade " + grade +  " " + subject +" " + subcontent + " todler educational songs   ";
-// }else if(grade == 'KG'){
-//     query = "grade " + grade + " " + subject + " " + subcontent + " todler educational video, songs  " ;
-// }else if(grade == '3-4'){
-//     query = "grade " + grade +  " " + subject +" " + subcontent + "  for kids songs " ;
-// }else{
-//     query = "grade 12 math Extreme values of functions";
-// }
+                // If no videos are available, fetch from YouTube
+                console.log("No videos found in subcontent document. Fetching from YouTube...");
+                var query = getQuery(grade, subcontent);
+                console.log("Query:", query);
 
-console.log("query " + query);
-                fetchYouTubeVideos(query, 30, function (videos) {
-                    if (videos.length > 0) {
-                        videos.forEach(function (video) {
-                            var videoData = {
+                fetchYouTubeVideos(query, 50, function (youtubeVideos) {
+                    if (youtubeVideos.length > 0) {
+                        // Save the fetched YouTube videos to the 'videos' field in the subcontent document
+                        var videosData = youtubeVideos.map(function (video) {
+                            return {
                                 videoId: video.videoId,
                                 title: video.title,
                                 channelTitle: video.channelTitle,
                                 publishedAt: video.publishedAt,
                                 thumbnails: video.thumbnails,
-                                grade:grade,
-                                subject:subject,
-                                content:content,
-                                subcontent:subcontent,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                grade: grade,
+                                subject: subject,
+                                content: content,
+                                subcontent: subcontent,
+
                             };
-
-                            videosRef.add(videoData)
-                                .then(function () {
-                                    console.log("Video saved:", videoData);
-                                })
-                                .catch(function (error) {
-                                    console.error("Error saving video:", error);
-                                });
                         });
-                        console.log("Fetched Videos:", videos);
-                        // Save the fetched videos to localStorage
-                        localStorage.setItem("videoList", JSON.stringify(videos));
 
-                       if (window.location.pathname !== "/index.html") {
-                            window.location.href = "/index.html";
-                            }
-                        updateVideoList(videos);
+                        subcontentRef.set({
+                            grade: grade,
+                            subject: subject,
+                            content: content,
+                            subcontent: subcontent,
+                            videos: videosData
+                        }, { merge: true }) // Merge to avoid overwriting other fields
+                            .then(function () {
+                                console.log("YouTube videos saved to subcontent document.");
+                                // Save the fetched videos to localStorage
+                                localStorage.setItem("videoList", JSON.stringify(videosData));
 
-                        // if(localStorage.getItem("isFirstLogin")=="yes")
-                        // {
-                        //     var sidebar = document.querySelector(".sidebar");
-                        //     sidebar.classList.toggle("visible");
-                        // }
+                                // Redirect to the main page if not already there
+                                if (window.location.pathname !== "/index.html") {
+                                    window.location.href = "/index.html";
+                                }
 
+                                // Update the video list on the page
+                                updateVideoList(videosData);
+                            })
+                            .catch(function (error) {
+                                console.error("Error saving YouTube videos to subcontent document:", error);
+                            });
                     } else {
-                        console.log("No suitable videos found.");
+                        console.log("No suitable YouTube videos found.");
                     }
                 });
             }
         })
         .catch(function (error) {
-            console.error("Error checking videos collection:", error);
+            console.error("Error fetching subcontent document:", error);
         });
 }
-
 
 document.addEventListener("DOMContentLoaded", function() {
     var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
     var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
-    var grade = localStorage.getItem("grade");
+
     var welcome = true;
     console.log("lastWatchedPath  " + lastWatchedPath);
 
     fetchSubjects();
+    fetchSubcontentsForGrade(grade);
+
+
+    // Search functionality
+    var searchBar = document.getElementById("searchBar");
+    var searchResults = document.getElementById("searchResults");
+    var resultsList = document.getElementById("resultsList");
+
+    searchBar.addEventListener("input", function (event) {
+      var searchQuery = event.target.value.toLowerCase(); // Get the search query
+
+      if (searchQuery === "") {
+        searchResults.style.display = "none"; // Hide results if search bar is empty
+        return;
+      }
+
+      // Filter subcontents by name
+      var filteredSubcontents = allSubcontents.filter(function (subcontent) {
+        return subcontent.subcontent.toLowerCase().includes(searchQuery);
+      });
+
+      // Display the filtered results
+      displaySearchResults(filteredSubcontents);
+    });
+
+    // Display search results
+    function displaySearchResults(subcontents) {
+      // Clear previous results
+      resultsList.innerHTML = "";
+
+      if (subcontents.length === 0) {
+        resultsList.innerHTML = "<li>No results found.</li>";
+        searchResults.style.display = "block"; // Show results dropdown
+        return;
+      }
+
+      // Render each subcontent
+      subcontents.forEach(function (subcontent) {
+        var listItem = document.createElement("li");
+        listItem.textContent = subcontent.subcontent;
+
+        // Store the full path in a data attribute
+        listItem.setAttribute("data-path", subcontent.path);
+
+        // Add click listener to handle subcontent selection
+        listItem.addEventListener("click", function () {
+          handleSubcontentSelection(subcontent);
+        });
+
+        resultsList.appendChild(listItem);
+      });
+
+      // Show results dropdown
+      searchResults.style.display = "block";
+    }
+
+    // Handle subcontent selection
+    function handleSubcontentSelection(subcontent) {
+      console.log("Subcontent selected:", subcontent.grade);
+
+
+      // Hide the search results dropdown
+      searchResults.style.display = "none";
+
+      // Clear the search bar
+      searchBar.value = "";
+handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
+
+    }
+
 
 
     if (isIndexPage && isFirstLogin== "yes") {
 
 
         if ( lastWatchedPath != "" ){
-            var lastWatchedPathParts = lastWatchedPath.split("/");
-            handleSubcontentClick(lastWatchedPathParts[0], lastWatchedPathParts[1], lastWatchedPathParts[2], lastWatchedPathParts[3]);
+            // var lastWatchedPathParts = lastWatchedPath.split("/");
+            // handleSubcontentClick(lastWatchedPathParts[0], lastWatchedPathParts[1], lastWatchedPathParts[2], lastWatchedPathParts[3]);
 
-
+            getLastWatchedVideos();
         }else{
-            //Bring videos from collection Group
-            console.log("Bring videos from collection Group..." );
-            var videosRef = db.collectionGroup("videos").where("grade", "==", grade).limit(100);
+             // Reference to the subcontent document
+      var subcontentRef = db.collection("subcontents")
+      .doc( "3_2D shapes and tessellation"  );
+    subcontentRef.get()
+    .then(function (doc) {
+        if (doc.exists && doc.data().videos) {
+            // If videos are already available in the 'videos' field
+            console.log("Fetching videos from subcontent document...");
+            var videos = doc.data().videos;
+            console.log("Fetched Videos:", videos);
 
-            videosRef.get().then((querySnapshot) => {
-               var videos = querySnapshot.docs.map(function (doc) {
-                   return doc.data();
+            // Save the fetched videos to localStorage
+            localStorage.setItem("videoList", JSON.stringify(videos));
 
-               });
+            // Redirect to the main page if not already there
+            if (window.location.pathname !== "/index.html") {
+                window.location.href = "/index.html";
+            }
 
-               localStorage.setItem("videoList", JSON.stringify(videos));
-               updateVideoList(videos);
-           }).catch((error) => {
-               console.log("Error getting documents: ", error);
-           });
+            // Update the video list on the page
+            updateVideoList(videos);
+        }
+        else{
+            console.log("No last watched videos found");
+        }
+    }).catch(function (error) {
+        console.error("Error fetching subcontent document:", error);
+    });
         }
         // Mark that the user has logged in before
         localStorage.setItem("isFirstLogin", "no");
@@ -396,3 +548,22 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
   });
+
+
+
+  //=========================== search ==============================
+  function fetchSubcontentsForGrade(grade) {
+    return db.collectionGroup("subcontents")
+        .where("grade", "==", grade) // Filter by grade
+        .get()
+        .then(function (querySnapshot) {
+            allSubcontents = querySnapshot.docs.map(function (doc) {
+                // Create a new object and copy properties from doc.data()
+                return Object.assign({}, doc.data());
+            });
+            console.log("Subcontents fetched:", allSubcontents);
+        })
+        .catch(function (error) {
+            console.error("Error fetching subcontents:", error);
+        });
+}

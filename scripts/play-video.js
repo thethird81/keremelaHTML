@@ -13,6 +13,7 @@ if (!Object.values) {
 var questions = JSON.parse(localStorage.getItem("questions") || "[]");
 var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
 var videoId = getURLParameter("videoId") || videoList[0] || "dQw4w9WgXcQ"; // Default video ID
+localStorage.setItem('videoId', videoId);
 var iframeOverlay = document.getElementById('iframeOverlay');
 var currentVideoIndex = 0;
 var currentQuestionIndex = 0;
@@ -45,6 +46,7 @@ function getNextVideoId() {
 function onYouTubeIframeAPIReady() {
 
     console.log("YouTube IFrame API is ready!" + videoId );
+    checkFavourited (videoId);
     player = new YT.Player("youtube-player", {
         videoId: videoId,
         playerVars: {
@@ -68,7 +70,7 @@ function onPlayerReady(event) {
     player.playVideo();
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
-   var lastWatchedPathParts = lastWatchedPath.split("/");
+   var lastWatchedPathParts = lastWatchedPath.split("_");
     if (lastWatchedPathParts[1]=='Entertainment')
         displayQuestion();
 }
@@ -79,7 +81,11 @@ function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         var nextVideoId = getNextVideoId();
         if (nextVideoId) {
+            console.log("Player state changed:", nextVideoId.videoId);
+            localStorage.setItem('videoId', nextVideoId.videoId);
+            checkFavourited(nextVideoId.videoId);
             player.loadVideoById(nextVideoId);
+
         } else {
             console.warn("No next video found.");
         }
@@ -137,7 +143,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     (function (element) {
                         element.addEventListener("click", function () {
                             var videoId = element.getAttribute("data-video-id");
-                            playVideo(videoId); // Call the function to play the video
+                            playVideo(videoId);
+                            localStorage.setItem('videoId', videoId);
+                            checkFavourited(videoId);
+                             // Call the function to play the video
                         });
                     })(videoElements[i]); // IIFE to correctly capture element reference
                 }
@@ -163,6 +172,7 @@ var overlay = document.getElementById('overlay');
 var questionText = document.getElementById('questionText');
 var answerContainer = document.getElementById('answerContainer');
 var countdownDisplay = document.getElementById('countdown');
+var favoriteBtn = document.querySelector(".favorite-btn");
 var quizInterval;
 var countdownInterval;
 var signOutButton = document.getElementById('signOut');
@@ -194,6 +204,7 @@ signOutButton.addEventListener('click', function() {
     if (userId ) {
         updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
             .then(function() {
+                updateFavoritesOnSignOut();
                 // Clear localStorage and sign out after Firestore update completes
                 localStorage.clear();
                 auth.signOut()
@@ -218,9 +229,11 @@ iframeOverlay.addEventListener('click', function() {
 
         if (playerState === YT.PlayerState.PLAYING) {
             player.pauseVideo(); // Pause the video if it's playing
+            //favoriteBtn.style.display = 'block';
             console.log("Video paused");
         } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.ENDED) {
             player.playVideo(); // Play the video if it's paused or ended
+            //favoriteBtn.style.display = 'none';
             console.log("Video playing");
         }
     } else {
@@ -377,3 +390,121 @@ function handleAnswerClick(e) {
     }
 }
 
+/*================================= favourites =========================================*/
+
+favoriteBtn.addEventListener("click", function (){
+
+toggleFavorite();
+});
+
+// Function to toggle favorite status using videoId (ES5 compatible)
+function toggleFavorite() {
+    var userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        console.error("User not logged in.");
+        return;
+    }
+
+    var videoId = localStorage.getItem('videoId');
+    var videoList = JSON.parse(localStorage.getItem('videoList')) || [];
+    var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+    var video = null;
+    for (var i = 0; i < videoList.length; i++) {
+        if (videoList[i].videoId === videoId) {
+            video = videoList[i]; // Found the video object
+            break;
+        }
+    }
+
+    if (!video) {
+        console.error("Video not found in the list.");
+        return;
+    }
+
+    var index = -1;
+    for (var j = 0; j < favorites.length; j++) {
+        if (favorites[j].videoId === videoId) {
+            index = j;
+            break;
+        }
+    }
+
+   // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
+
+    if (index !== -1) {
+        // Remove from favorites
+        favorites.splice(index, 1);
+        if (favoriteBtn) {
+            favoriteBtn.innerHTML = "&#9734;";  // Empty star
+            favoriteBtn.style.color = "";
+        }
+        console.log("Removed from favorites:", favorites);
+    } else {
+        // Add to favorites
+        favorites.push(video);
+        if (favoriteBtn) {
+            favoriteBtn.innerHTML = "&#9733;";  // Filled star
+            favoriteBtn.style.color = "red";
+        }
+        console.log("Added to favorites:", favorites);
+    }
+
+    // Save updated favorites to local storage
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+// Function to update user favorites in Firestore on sign out (ES5 Compatible)
+function updateFavoritesOnSignOut() {
+    var userId = localStorage.getItem('loggedInUserId');
+    if (!userId) {
+        console.error("No user logged in.");
+        return;
+    }
+
+    var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+    // Update Firestore with the latest favorite videos
+    db.collection("users").doc(userId).set(
+        { favorites: favorites },
+        { merge: true }  // Merge with existing data
+    ).then(function () {
+        console.log("Favorites successfully updated in Firestore.");
+
+
+
+    }).catch(function (error) {
+        console.error("Error updating favorites:", error);
+    });
+}
+
+
+function checkFavourited (videoId){
+
+    console.log("checkFavourited " + videoId);
+    var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    var index = -1;
+    for (var j = 0; j < favorites.length; j++) {
+        if (favorites[j].videoId === videoId) {
+            index = j;
+            break;
+        }
+    }
+
+   // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
+
+    if (index !== -1) {
+        if (favoriteBtn) {
+            favoriteBtn.innerHTML = "&#9733;";  // Filled star
+            favoriteBtn.style.color = "red";
+        }
+
+    } else {
+
+
+        if (favoriteBtn) {
+            favoriteBtn.innerHTML = "&#9734;";  // Empty star
+            favoriteBtn.style.color = "";
+        }
+
+    }
+}
