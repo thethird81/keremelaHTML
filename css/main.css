@@ -222,6 +222,7 @@ nav{
 }
 .collapsible:hover {
     background: #405a42;
+    transform: scale(1.05); /* Slight zoom effect */
 }
 
 .collapsible::after {
@@ -265,6 +266,7 @@ nav{
 }
 .subunits:hover{
     background: #745f5f;
+    transform: scale(1.05); /* Slight zoom effect */
 }
 .content {
     display: none;
