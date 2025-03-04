@@ -6,36 +6,39 @@ if (!Object.values) {
         });
     };
 }
+var loggedInUserId = localStorage.getItem('loggedInUserId');
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
+var joinUs = document.getElementById('joinUs');
+var userIcon = document.getElementById('userIcon');
+var dropdownMenu = document.getElementById('dropdownMenu');
+var searchBox = document.querySelector(".search-box");
 var age ;
 
 var db = firebase.firestore();
  var auth = firebase.auth();
    // Listen for authentication state changes
-auth.onAuthStateChanged(function(user) {
-    var loggedInUserId = localStorage.getItem('loggedInUserId');
-    if (loggedInUserId) {
-        console.log(user);
-    } else {
-        window.location.href = '/pages/login-register.html';
-        console.log("User Id not found in local storage");
-    }
-});
+// auth.onAuthStateChanged(function(user) {
 
-
-
-
+//     if (loggedInUserId) {
+//         console.log(user);
+//     } else {
+//         window.location.href = '/index.html';
+//         console.log("User Id not found in local storage");
+//     }
+// });
 
 document.addEventListener('DOMContentLoaded', function () {
+    if(loggedInUserId)
+    {
+        joinUs.style.display = "none";
     var nickName = localStorage.getItem('nickName');
     var age = localStorage.getItem('age');
     var grade = localStorage.getItem('grade');
     var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
-    var userId = localStorage.getItem('gradloggedInUserIde');
 
 
-    // Step 2: Parse the retrieved data (assuming it's stored as a JSON string)
+
 
 
 
@@ -44,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function () {
     updateVideoList(videoList);
 
     if (!nickName || !age) {
-        alert("User data is missing. Redirecting to login page.");
-        window.location.href = '/pages/login-register.html';
+        //alert("User data is missing. Redirecting to login page.");
+        //window.location.href = '/index.html';
         return;
     }
 
@@ -75,8 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem("selectedTopic", JSON.stringify(selectedTopic));
         }
 
-        var userIcon = document.getElementById('userIcon');
-        var dropdownMenu = document.getElementById('dropdownMenu');
+
 
     userIcon.addEventListener('click', function () {
         dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
@@ -136,82 +138,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-});
-function fetchQuestionsForSelectedPaths(selectedQuizList) {
+    }
+    else{
 
-    var db = firebase.firestore();
-    var allQuestions = [];
-    var fetchPromises = []; // Store all fetch promises
+        userIcon.style.display = "none";
+        searchBox.style.display = "none";
+        joinUs.addEventListener("click",function(){
+            var sidebar = document.querySelector(".sidebar");
+            sidebar.classList.add("visible");
+        });
 
-    for (var i = 0; i < selectedQuizList.length; i++) {
-        (function(path) {
-            var pathParts = path.split('/'); // Split path into hierarchy levels
 
-            // Ensure the path has exactly 4 parts (Grade, Subject, Content, Subcontent)
-            if (pathParts.length !== 4) {
-                console.log("Invalid path structure: " + path);
-                return;
+        // Reference to the subcontent document
+      var subcontentRef = db.collection("subcontents")
+      .doc( "3_2D shapes and tessellation");
+    subcontentRef.get()
+    .then(function (doc) {
+        if (doc.exists && doc.data().videos) {
+            // If videos are already available in the 'videos' field
+            console.log("Fetching videos from subcontent document...");
+            var videos = doc.data().videos;
+            console.log("Fetched Videos:", videos);
+
+            // Save the fetched videos to localStorage
+            localStorage.setItem("videoList", JSON.stringify(videos));
+
+            // Redirect to the main page if not already there
+            if (window.location.pathname !== "/index.html") {
+                window.location.href = "/index.html";
             }
 
-            var grade = pathParts[0];
-            var subject = pathParts[1];
-            var content = pathParts[2];
-            var subcontent = pathParts[3];
+            // Update the video list on the page
+            updateVideoList(videos);
+        }
+        else{
+            console.log("No last watched videos found");
+        }
+    }).catch(function (error) {
+        console.error("Error fetching subcontent document:", error);
+    });
 
-            // Construct Firestore reference dynamically
-            var questionsRef = db.collection('grades')
-                .doc(grade)
-                .collection('subjects')
-                .doc(subject)
-                .collection('contents')
-                .doc(content)
-                .collection('subcontents')
-                .doc(subcontent)
-                .collection('questions');
 
-            // Fetch questions from Firestore
-            var fetchPromise = questionsRef.get().then(function(querySnapshot) {
-                if (querySnapshot.empty) {
-                    console.log("No questions found for path: " + path);
-                    return;
-                }
 
-                querySnapshot.forEach(function(doc) {
-                    var questionData = doc.data();
-                    var question = {
-                        questionImage: questionData.questionImage || "",
-                        createdAt: questionData.createdAt || "",
-                        question: questionData.question || "",
-                        options: Array.isArray(questionData.options) ? questionData.options.map(function(option) {
-                            return {
-                                text: option.text || "",
-                                optionImage: option.optionImage || ""
-                            };
-                        }) : [],
-                        correctAnswer: questionData.correctAnswer || 0
-                    };
-                    allQuestions.push(question);
-                });
-            }).catch(function(error) {
-                console.log("Error fetching questions for path: " + path, error);
-            });
-
-            fetchPromises.push(fetchPromise);
-        })(selectedQuizList[i]); // Immediately-invoked function expression (IIFE)
     }
 
-    // Wait for all fetch operations to complete
-    Promise.all(fetchPromises).then(function() {
-        if (allQuestions.length > 0) {
-            localStorage.setItem('questions', JSON.stringify(allQuestions));
-            console.log('Questions saved to localStorage for selected paths.');
-        } else {
-            console.log('No questions retrieved for the selected paths.');
-        }
-    }).catch(function(error) {
-        console.log("Error processing questions: ", error);
-    });
-}
+});
+
 
 function fetchAndMergeQuizzes() {
     var userId = localStorage.getItem("loggedInUserId");
@@ -292,7 +264,7 @@ signOutButton.addEventListener('click', function() {
                 auth.signOut()
                     .then(function() {
                         console.log('User signed out successfully');
-                        window.location.href = '/pages/login-register.html';
+                        window.location.href = '/index.html';
                     })
                     .catch(function(error) {
                         console.error('Error signing out:', error);
@@ -350,29 +322,6 @@ function fetchVideosFromFirebase(topic) {
     // Highlight the selected topic in the sidebar
     console.log("Highlighting Topic:", topic);
    // highlightSelectedTopic(topic);
-}
-
-
-// Highlight the selected topic
-function highlightSelectedTopic(topic) {
-    var sidebarLinks = document.querySelectorAll(".shortcut-links a");
-
-    // Loop through all sidebar links
-    Array.prototype.forEach.call(sidebarLinks, function (link) {
-        var linkText = link.querySelector("p").textContent;
-
-        if (linkText === topic) {
-            link.style.color = "#ed3833"; // Highlight color
-        } else {
-            link.style.color = ""; // Reset color
-        }
-    });
-}
-
-// Select a random topic
-function getRandomTopic() {
-    var randomIndex = Math.floor(Math.random() * sideBarList.length);
-    return sideBarList[randomIndex];
 }
 // Function to update user favorites in Firestore on sign out (ES5 Compatible)
 function updateFavoritesOnSignOut() {

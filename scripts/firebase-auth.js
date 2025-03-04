@@ -6,19 +6,19 @@ if (!Object.values) {
         });
     };
 }
-// Firebase Configuration
-var firebaseConfig = {
-    apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
-    authDomain: "keremela-508aa.firebaseapp.com",
-    databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
-    projectId: "keremela-508aa",
-    storageBucket: "keremela-508aa.firebasestorage.app",
-    messagingSenderId: "555590069435",
-    appId: "1:555590069435:web:1296b444545a84a73c8d9e"
-};
+// // Firebase Configuration
+// var firebaseConfig = {
+//     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
+//     authDomain: "keremela-508aa.firebaseapp.com",
+//     databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
+//     projectId: "keremela-508aa",
+//     storageBucket: "keremela-508aa.firebasestorage.app",
+//     messagingSenderId: "555590069435",
+//     appId: "1:555590069435:web:1296b444545a84a73c8d9e"
+// };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// // Initialize Firebase
+// firebase.initializeApp(firebaseConfig);
 
 // Show message function
 function showMessage(message, divId) {

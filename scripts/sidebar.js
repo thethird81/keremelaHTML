@@ -8,6 +8,13 @@ if (!Object.values) {
 }
 var allSubcontents=[];
 var grade = localStorage.getItem('grade');
+var loggedInUserId = localStorage.getItem('loggedInUserId');
+var sidebarContent = document.getElementById("sidebarContent");
+var menuIcon = document.querySelector(".menu-icon");
+var signinSignup = document.querySelector(".signin-signup");
+
+
+
 // Initialize Firebase (replace with your own config)
 var firebaseConfig = {
     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
@@ -27,7 +34,7 @@ var firebaseConfig = {
 // Fetch Data from Firestore or use cached data from localStorage
 function fetchSubjects() {
 
-    var sidebarContent = document.getElementById("sidebarContent");
+
 
 
     // Check if data exists in localStorage
@@ -57,7 +64,7 @@ function fetchSubjects() {
 // Function to render subjects, contents, and subcontents
 function renderSubjects(subjects) {
 
-    var sidebarContent = document.getElementById("sidebarContent");
+
     sidebarContent.innerHTML = ""; // Clear existing content
 
     // Loop through each subject
@@ -196,33 +203,7 @@ function fetchYouTubeVideos(query, maxResults, callback) {
                   callback([]);
               };
               xhr.send();
-    // fetch(URL)
-    //     .then(function (response) {
-    //         return response.json();
-    //     })
-    //     .then(function (data) {
-    //         var videos = [];
-    //         if (data.items.length > 0) {
-    //             data.items.forEach(function (item) {
-    //                 videos.push({
-    //                     videoId: item.id.videoId,
-    //                     title: item.snippet.title,
-    //                     channelTitle: item.snippet.channelTitle,
-    //                     publishedAt: item.snippet.publishedAt,
-    //                     thumbnails: {
-    //                         default: item.snippet.thumbnails.default.url,
-    //                         medium: item.snippet.thumbnails.medium.url,
-    //                         high: item.snippet.thumbnails.high.url
-    //                     }
-    //                 });
-    //             });
-    //         }
-    //         callback(videos);
-    //     })
-    //     .catch(function (error) {
-    //         console.error("Error fetching YouTube videos:", error);
-    //         callback([]);
-    //     });
+
 }
 
 function fetchYouTubeVideos1(URL, callback) {
@@ -410,87 +391,44 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+
+if(loggedInUserId){
     var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
     var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
-    var welcome = true;
     console.log("lastWatchedPath  " + lastWatchedPath);
 
+
+    console.log("user logged in sidebar ");
+    signinSignup.style.display = "none";
+    sidebarContent.style.display = "block";
     fetchSubjects();
     fetchSubcontentsForGrade(grade);
 
+      // Search functionality
+      var searchBar = document.getElementById("searchBar");
+      var searchResults = document.getElementById("searchResults");
+      var resultsList = document.getElementById("resultsList");
 
-    // Search functionality
-    var searchBar = document.getElementById("searchBar");
-    var searchResults = document.getElementById("searchResults");
-    var resultsList = document.getElementById("resultsList");
+      searchBar.addEventListener("input", function (event) {
+        var searchQuery = event.target.value.toLowerCase(); // Get the search query
 
-    searchBar.addEventListener("input", function (event) {
-      var searchQuery = event.target.value.toLowerCase(); // Get the search query
+        if (searchQuery === "") {
+          searchResults.style.display = "none"; // Hide results if search bar is empty
+          return;
+        }
 
-      if (searchQuery === "") {
-        searchResults.style.display = "none"; // Hide results if search bar is empty
-        return;
-      }
-
-      // Filter subcontents by name
-      var filteredSubcontents = allSubcontents.filter(function (subcontent) {
-        return subcontent.subcontent.toLowerCase().includes(searchQuery);
-      });
-
-      // Display the filtered results
-      displaySearchResults(filteredSubcontents);
-    });
-
-    // Display search results
-    function displaySearchResults(subcontents) {
-      // Clear previous results
-      resultsList.innerHTML = "";
-
-      if (subcontents.length === 0) {
-        resultsList.innerHTML = "<li>No results found.</li>";
-        searchResults.style.display = "block"; // Show results dropdown
-        return;
-      }
-
-      // Render each subcontent
-      subcontents.forEach(function (subcontent) {
-        var listItem = document.createElement("li");
-        listItem.textContent = subcontent.subcontent;
-
-        // Store the full path in a data attribute
-        listItem.setAttribute("data-path", subcontent.path);
-
-        // Add click listener to handle subcontent selection
-        listItem.addEventListener("click", function () {
-          handleSubcontentSelection(subcontent);
+        // Filter subcontents by name
+        var filteredSubcontents = allSubcontents.filter(function (subcontent) {
+          return subcontent.subcontent.toLowerCase().includes(searchQuery);
         });
 
-        resultsList.appendChild(listItem);
+        // Display the filtered results
+        displaySearchResults(filteredSubcontents);
       });
 
-      // Show results dropdown
-      searchResults.style.display = "block";
-    }
-
-    // Handle subcontent selection
-    function handleSubcontentSelection(subcontent) {
-      console.log("Subcontent selected:", subcontent.grade);
-
-
-      // Hide the search results dropdown
-      searchResults.style.display = "none";
-
-      // Clear the search bar
-      searchBar.value = "";
-handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
-
-    }
-
-
-
-    if (isIndexPage && isFirstLogin== "yes") {
+      if (isIndexPage && isFirstLogin== "yes") {
 
 
         if ( lastWatchedPath != "" ){
@@ -532,11 +470,17 @@ handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,sub
         localStorage.setItem("isFirstLogin", "no");
 
     }
+
+}else{
+    sidebarContent.style.display = "none";
+    console.log("no user logged in sidebar ");
+    signinSignup.style.display = "block"
+}
 });
   // Toggle the sidebar visibility when the menu icon is clicked
-  var menuIcon = document.querySelector(".menu-icon");
+
   menuIcon.addEventListener("click", function() {
-    var sidebarContent = document.getElementById("sidebarContent");
+
     if(sidebarContent){
         var sidebar = document.querySelector(".sidebar");
         sidebar.classList.toggle("visible");
@@ -550,7 +494,50 @@ handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,sub
   });
 
 
+ // Display search results
+ function displaySearchResults(subcontents) {
+    // Clear previous results
+    resultsList.innerHTML = "";
 
+    if (subcontents.length === 0) {
+      resultsList.innerHTML = "<li>No results found.</li>";
+      searchResults.style.display = "block"; // Show results dropdown
+      return;
+    }
+
+    // Render each subcontent
+    subcontents.forEach(function (subcontent) {
+      var listItem = document.createElement("li");
+      listItem.textContent = subcontent.subcontent;
+
+      // Store the full path in a data attribute
+      listItem.setAttribute("data-path", subcontent.path);
+
+      // Add click listener to handle subcontent selection
+      listItem.addEventListener("click", function () {
+        handleSubcontentSelection(subcontent);
+      });
+
+      resultsList.appendChild(listItem);
+    });
+
+    // Show results dropdown
+    searchResults.style.display = "block";
+  }
+
+  // Handle subcontent selection
+  function handleSubcontentSelection(subcontent) {
+    console.log("Subcontent selected:", subcontent.grade);
+
+
+    // Hide the search results dropdown
+    searchResults.style.display = "none";
+
+    // Clear the search bar
+    searchBar.value = "";
+handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
+
+  }
   //=========================== search ==============================
   function fetchSubcontentsForGrade(grade) {
     return db.collectionGroup("subcontents")

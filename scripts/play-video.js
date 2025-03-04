@@ -10,11 +10,14 @@ if (!Object.values) {
 }
 
 // Fetch questions and video list from localStorage
+var loggedInUserId = localStorage.getItem('loggedInUserId');
 var questions = JSON.parse(localStorage.getItem("questions") || "[]");
 var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
 var videoId = getURLParameter("videoId") || videoList[0] || "dQw4w9WgXcQ"; // Default video ID
 localStorage.setItem('videoId', videoId);
 var iframeOverlay = document.getElementById('iframeOverlay');
+var userIcon = document.getElementById('userIcon');
+var searchBox = document.querySelector(".search-box");
 var currentVideoIndex = 0;
 var currentQuestionIndex = 0;
 var player;
@@ -68,12 +71,15 @@ function onYouTubeIframeAPIReady() {
 // The API will call this function when the video player is ready.
 function onPlayerReady(event) {
     player.playVideo();
-    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+    if(loggedInUserId)
+    {
+        var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+        var lastWatchedPathParts = lastWatchedPath.split("_");
+         if (lastWatchedPathParts[1]=='Entertainment')
+             displayQuestion();
+     }
+    }
 
-   var lastWatchedPathParts = lastWatchedPath.split("_");
-    if (lastWatchedPathParts[1]=='Entertainment')
-        displayQuestion();
-}
 
 // The API calls this function when the player's state changes.
 function onPlayerStateChange(event) {
@@ -210,7 +216,7 @@ signOutButton.addEventListener('click', function() {
                 auth.signOut()
                     .then(function() {
                         console.log('User signed out successfully');
-                        window.location.href = '/pages/login-register.html';
+                        window.location.href = '/index.html';
                     })
                     .catch(function(error) {
                         console.error('Error signing out:', error);
@@ -508,3 +514,22 @@ function checkFavourited (videoId){
 
     }
 }
+
+//============================ on load ===================
+
+document.addEventListener('DOMContentLoaded', function () {
+if(loggedInUserId){
+    joinUs.style.display = "none";
+}
+else{
+    favoriteBtn.style.display = "none";
+    userIcon.style.display = "none";
+    searchBox.style.display = "none";
+    joinUs.addEventListener("click",function(){
+        var sidebar = document.querySelector(".sidebar");
+        sidebar.classList.add("visible");
+    });
+
+}
+
+});

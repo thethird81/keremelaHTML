@@ -523,3 +523,31 @@ nav{
     -webkit-animation: blink 2s infinite; /* For older WebKit browsers */
     animation: blink 2s infinite;
 }
+
+.sliding-text {
+    position: absolute;
+    white-space: nowrap; /* Prevents text from breaking */
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: #000000;
+    padding: 10px 20px;
+    border-radius: 5px;
+
+    /* Start off-screen (right side) */
+    right: -100%;
+
+
+    /* Animation */
+    animation: slideText 24s linear infinite;
+  }
+
+  /* Keyframe Animation */
+  @keyframes slideText {
+    0% {
+      right: -100%;
+    }
+    100% {
+      right: 100%;
+    }
+  }
