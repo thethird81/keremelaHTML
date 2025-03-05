@@ -525,29 +525,19 @@ nav{
 }
 
 .sliding-text {
+    display: inline-block;
+    white-space: nowrap;
     position: absolute;
-    white-space: nowrap; /* Prevents text from breaking */
-    font-size: 20px;
-    font-weight: bold;
     color: #fff;
     background: #000000;
-    padding: 10px 20px;
-    border-radius: 5px;
+    animation: slideText 10s linear infinite; /* Adjust timing as needed */
+}
 
-    /* Start off-screen (right side) */
-    right: -100%;
-
-
-    /* Animation */
-    animation: slideText 24s linear infinite;
-  }
-
-  /* Keyframe Animation */
-  @keyframes slideText {
-    0% {
-      right: -100%;
+@keyframes slideText {
+    from {
+        transform: translateX(-30%);
     }
-    100% {
-      right: 100%;
+    to {
+        transform: translateX(-70%);
     }
-  }
+}

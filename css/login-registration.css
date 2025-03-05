@@ -46,10 +46,11 @@
     padding: 12px 40px 12px 15px; /* Space for icon */
     background-color: white;
     border: 2px solid #ffffff;
+    color: #000;
     border-radius: 6px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
-}
+}type
 
 /* Fix Icon Position */
 .input-group i {
@@ -302,10 +303,10 @@ button:hover {
     width: 100%;
     padding: 10px 12px;
     background-color: transparent;
-    border: 2px solid #757575;
+    border: 2px solid #ffffff;
     border-radius: 6px;
     font-size: 1rem;
-    color: #333;
+    color: #ffffff;
     appearance: none; /* Hides default dropdown arrow in some browsers */
     background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%23575757" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z"/></svg>');
     background-repeat: no-repeat;
@@ -317,7 +318,7 @@ button:hover {
 /* On Focus */
 .grade-dropdown select:focus {
     outline: none;
-    border-color: #540a63;
+    border-color: #ffffff;
     box-shadow: 0 0 5px rgba(84, 10, 99, 0.5);
 }
 
@@ -325,8 +326,8 @@ button:hover {
 .grade-dropdown select option {
     padding: 10px;
     font-size: 1rem;
-    color: #333;
-    background: white;
+    color: #ffffff;
+    background: #540a63;
 }
 
 /* Hover Effect */
@@ -340,10 +341,11 @@ button:hover {
 }
 
 /* Responsive Adjustments */
-/* @media (max-width: 480px) {
+@media (max-width: 480px) {
     .grade-dropdown select {
         font-size: 0.9rem;
         padding: 10px 12px;
-        background-position: right 10px center;
+        width: 100%;
+
     }
-} */
+}

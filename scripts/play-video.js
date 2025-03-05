@@ -103,6 +103,17 @@ function onPlayerStateChange(event) {
 // Handle DOM Content Load
 document.addEventListener("DOMContentLoaded", function () {
 
+    var signInForm=document.getElementById('signIn');
+    var signUpForm=document.getElementById('signup');
+    signUpButton.addEventListener('click',function(){
+        signInForm.style.display="none";
+        signUpForm.style.display="block";
+    })
+    signInButton.addEventListener('click', function(){
+        signInForm.style.display="block";
+        signUpForm.style.display="none";
+    })
+
     var nickName = localStorage.getItem("nickName");
     if (nickName) {
         document.getElementById("nickName").innerText = nickName;
@@ -518,8 +529,10 @@ function checkFavourited (videoId){
 //============================ on load ===================
 
 document.addEventListener('DOMContentLoaded', function () {
+    var slidingText = document.querySelector(".sliding-text");
 if(loggedInUserId){
     joinUs.style.display = "none";
+    slidingText.style.display = "none";
 }
 else{
     favoriteBtn.style.display = "none";
@@ -533,3 +546,4 @@ else{
 }
 
 });
+

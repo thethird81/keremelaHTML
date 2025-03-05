@@ -6,20 +6,16 @@ if (!Object.values) {
         });
     };
 }
-// // Firebase Configuration
-// var firebaseConfig = {
-//     apiKey: "AIzaSyD2snpMQF9j3aDJZji-nmcJ_W9wzjLLQLE",
-//     authDomain: "keremela-508aa.firebaseapp.com",
-//     databaseURL: "https://keremela-508aa-default-rtdb.firebaseio.com",
-//     projectId: "keremela-508aa",
-//     storageBucket: "keremela-508aa.firebasestorage.app",
-//     messagingSenderId: "555590069435",
-//     appId: "1:555590069435:web:1296b444545a84a73c8d9e"
-// };
 
-// // Initialize Firebase
-// firebase.initializeApp(firebaseConfig);
+  // Age List
+  var ageList = ["0-2","3-4","5-7","8-10","11+"];
 
+//   var grade = {
+//      "PreKG": "PreK - Early Years 1",
+//      "KG": "Kg - Early Years 2",
+//      "3": "Grade 3-Year 4",
+//      "12": "Grade 12-Year 13"
+//  };
 // Show message function
 function showMessage(message, divId) {
     var messageDiv = document.getElementById(divId);
@@ -28,74 +24,68 @@ function showMessage(message, divId) {
     messageDiv.style.opacity = 1;
     setTimeout(function() {
         messageDiv.style.opacity = 0;
-    }, 5000);
+    }, 3000);
 }
-     // Age List
-     var ageList = ["0-2","3-4","5-7","8-10","11+"];
 
-     var grade = {
+// Function to populate the dropdown
+function populateDropdown() {
+    var grade = {
+        "Toddler": "Toddler",
         "PreKG": "Pre-K - Early Years 1",
         "KG": "Kg - Early Years 2",
+        "1": "Grade 1-Year 2",
+        "2": "Grade 2-Year 3",
         "3": "Grade 3-Year 4",
+        "4": "Grade 4-Year 5",
+        "5": "Grade 5-Year 6",
+        "6": "Grade 6-Year 7",
+        "7": "Grade 7-Year 8",
+        "8": "Grade 8-Year 9",
+        "9": "Grade 9-Year 10",
+        "10": "Grade 10-Year 11",
+        "11": "Grade 11-Year 12",
         "12": "Grade 12-Year 13"
     };
-    // var grade = {
-    //     "Toddler": "Toddler",
-    //     "Pre-KG": "Pre-K - Early Years 1",
-    //     "KG": "Kg - Early Years 2",
-    //     "1-2": "Grade 1-Year 2",
-    //     "2-3": "Grade 2-Year 3",
-    //     "3-4": "Grade 3-Year 4",
-    //     "4-5": "Grade 4-Year 5",
-    //     "5-6": "Grade 5-Year 6",
-    //     "6-7": "Grade 6-Year 7",
-    //     "7-8": "Grade 7-Year 8",
-    //     "8-9": "Grade 8-Year 9",
-    //     "9-10": "Grade 9-Year 10",
-    //     "10-11": "Grade 10-Year 11",
-    //     "11-12": "Grade 11-Year 12",
-    //     "12-13": "Grade 12-Year 13"
-    // };
-    //  // Populate age dropdown
-    //  var ageSelect = document.getElementById('ageSelect');
-    //  ageList.forEach(function(ageGroup) {
-    //      var option = document.createElement('option');
-    //      option.value = ageGroup;
-    //      option.textContent = ageGroup;
-    //      ageSelect.appendChild(option);
-    //  });
-    //  var ageSel= document.getElementById('age');
-    //  ageList.forEach(function(age) {
-    //      var option = document.createElement('option');
-    //      option.value = age;
-    //      option.textContent = age;
-    //      ageSel.appendChild(option);
-    //  });
-     // Populate the dropdown list
-     function populateDropdown() {
-        var select = document.getElementById("gradeSelect");
-        for (var key in grade) {
-            if (grade.hasOwnProperty(key)) {
-                var option = document.createElement("option");
-                option.value = key;  // Key as value
-                option.text = grade[key];  // Display value
-                select.appendChild(option);
-            }
+
+
+
+    var select = document.getElementById("gradeSelect");
+    console.log("Select element:", select); // Debugging: Check if the select element is found
+    if (!select) {
+        console.error("Dropdown element not found!");
+        return;
+    }
+
+    for (var key in grade) {
+        console.log("Loop iteration, key:", key); // Debugging
+        if (grade.hasOwnProperty(key)) {
+            var option = document.createElement("option");
+            option.value = key;
+            option.text = grade[key];
+            console.log("Option created:", option); // Debugging
+            select.appendChild(option);
         }
     }
+}
 
-    // Display the selected key
-    function getSelectedKey() {
-        var select = document.getElementById("gradeSelect");
-        var selectedKey = select.value;
-       // document.getElementById("selectedKey").innerHTML = "Selected Key: " + (selectedKey || "None");
-      console.log(selectedKey);
+// Function to get the selected key
+function getSelectedKey() {
+    var select = document.getElementById("gradeSelect");
+    if (!select) {
+        console.error("Dropdown element not found!");
+        return;
     }
 
-    // Initialize the dropdown
-    window.onload = function () {
-        populateDropdown();
-    };
+    var selectedKey = select.value; // Get the selected key
+    console.log("Selected Key:", selectedKey); // Debugging: Check the selected key
+    document.getElementById("selectedKey").innerHTML = "Selected Key: " + (selectedKey || "None");
+}
+
+// Initialize the dropdown when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM fully loaded, populating dropdown...");
+    populateDropdown();
+});
 
 // Sign Up functionality
 var signUp = document.getElementById('submitSignUp');
@@ -103,7 +93,7 @@ signUp.addEventListener('click', function(event) {
     event.preventDefault();
     var email = document.getElementById('rEmail').value;
     var password = document.getElementById('rPassword').value;
-    var nickName = document.getElementById('nickName').value;
+    var nickName = document.getElementById('nickNameText').value;
     var grade =document.getElementById("gradeSelect").value;
 
 

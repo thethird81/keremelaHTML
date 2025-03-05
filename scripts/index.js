@@ -9,11 +9,12 @@ if (!Object.values) {
 var loggedInUserId = localStorage.getItem('loggedInUserId');
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
-var joinUs = document.getElementById('joinUs');
-var userIcon = document.getElementById('userIcon');
-var dropdownMenu = document.getElementById('dropdownMenu');
-var searchBox = document.querySelector(".search-box");
+
 var age ;
+
+
+
+
 
 var db = firebase.firestore();
  var auth = firebase.auth();
@@ -29,9 +30,28 @@ var db = firebase.firestore();
 // });
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    var signInForm=document.getElementById('signIn');
+    var signUpForm=document.getElementById('signup');
+    signUpButton.addEventListener('click',function(){
+        signInForm.style.display="none";
+        signUpForm.style.display="block";
+    })
+    signInButton.addEventListener('click', function(){
+        signInForm.style.display="block";
+        signUpForm.style.display="none";
+    })
+
+    var joinUs = document.getElementById('joinUs');
+var userIcon = document.getElementById('userIcon');
+var dropdownMenu = document.getElementById('dropdownMenu');
+var searchBox = document.querySelector(".search-box");
+var slidingText = document.querySelector(".sliding-text");
     if(loggedInUserId)
     {
+
         joinUs.style.display = "none";
+        slidingText.style.display = "none";
     var nickName = localStorage.getItem('nickName');
     var age = localStorage.getItem('age');
     var grade = localStorage.getItem('grade');
@@ -377,7 +397,6 @@ function updateVideoList(videos) {
         });
     }
 }
-
 
 
 
