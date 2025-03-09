@@ -50,19 +50,19 @@ function populateDropdown() {
 
 
     var select = document.getElementById("gradeSelect");
-    console.log("Select element:", select); // Debugging: Check if the select element is found
+
     if (!select) {
         console.error("Dropdown element not found!");
         return;
     }
 
     for (var key in grade) {
-        console.log("Loop iteration, key:", key); // Debugging
+
         if (grade.hasOwnProperty(key)) {
             var option = document.createElement("option");
             option.value = key;
             option.text = grade[key];
-            console.log("Option created:", option); // Debugging
+
             select.appendChild(option);
         }
     }
@@ -77,13 +77,13 @@ function getSelectedKey() {
     }
 
     var selectedKey = select.value; // Get the selected key
-    console.log("Selected Key:", selectedKey); // Debugging: Check the selected key
+
     document.getElementById("selectedKey").innerHTML = "Selected Key: " + (selectedKey || "None");
 }
 
 // Initialize the dropdown when the page loads
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded, populating dropdown...");
+
     populateDropdown();
 });
 

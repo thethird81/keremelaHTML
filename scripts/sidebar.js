@@ -166,7 +166,7 @@ function fetchYouTubeVideos(query, maxResults, callback) {
    // var URL = "https://youtube.googleapis.com/youtube/v3/search?q=%22Construction%20and%20interpretation%20of%20graphs%22%20grade%2012&part=snippet&key=AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM&videoEmbeddable=true&maxResults=50&type=video";
    var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
           "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + maxResults +
-          "&type=video&relevanceLanguage=en&order=relevance&videoDuration=medium";
+          "&type=video&relevanceLanguage=en&order=relevance";
               console.log( encodeURIComponent(query) );
 
               var xhr = new XMLHttpRequest();
@@ -206,46 +206,11 @@ function fetchYouTubeVideos(query, maxResults, callback) {
 
 }
 
-function fetchYouTubeVideos1(URL, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", URL, true);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) { // Request is complete
-            if (xhr.status === 200) { // Successful response
-                var data = JSON.parse(xhr.responseText);
-                var videos = [];
-                if (data.items && data.items.length > 0) {
-                    data.items.forEach(function (item) {
-                        videos.push({
-                            videoId: item.id.videoId,
-                            title: item.snippet.title,
-                            channelTitle: item.snippet.channelTitle,
-                            publishedAt: item.snippet.publishedAt,
-                            thumbnails: {
-                                default: item.snippet.thumbnails.default.url,
-                                medium: item.snippet.thumbnails.medium.url,
-                                high: item.snippet.thumbnails.high.url
-                            }
-                        });
-                    });
-                }
-                callback(videos);
-            } else {
-                console.error("Error fetching YouTube videos:", xhr.statusText);
-                callback([]);
-            }
-        }
-    };
-    xhr.onerror = function () {
-        console.error("Request failed");
-        callback([]);
-    };
-    xhr.send();
-}
-function displayTitle(subcontentPath) {
-    var outputElement = document.getElementById("output");
+
+function displayTitle(subcontent) {
+    var outputElement = document.getElementById("subcontent-title");
     if (outputElement) {
-        outputElement.innerHTML = subcontentPath;
+        outputElement.innerHTML = subcontent;
     } else {
         console.log("Element not found.");
     }
@@ -254,12 +219,12 @@ function getQuery(grade, subcontent) {
     var query = "";
 
     if (grade === 'Pre-KG') {
-        query = "grade " + grade  + " " + subcontent + " toddler educational songs";
+        query = grade  + " " + subcontent + " toddler educational songs";
     } else if (grade === 'KG') {
-        query = "grade " + grade  + " " + subcontent + " toddler educational video, songs";
+        query =subcontent + " for toddler";
     } else if (grade === '3') {
 
-        query = "grade " + grade  + " " + subcontent ;
+        query = subcontent ;
     } else {
 
         query = "grade " + grade  + " " + subcontent
@@ -302,28 +267,123 @@ function getLastWatchedVideos(){
     });
 }
 function handleSubcontentClick(grade, subject, content, subcontent) {
-    var subcontentPath = "grades/" + grade + "/subjects/" + subject + "/contents/" + content + "/subcontents/" + subcontent;
-    var lastWatchedPath = grade +  "_" + subject +  "_" + content+  "_" + subcontent;
-    localStorage.setItem('lastWatchedPath', lastWatchedPath);
-    var title = subject;
-    console.log(subcontentPath);
-    displayTitle(title);
 
-    // Reference to the subcontent document
-    var subcontentRef = db.collection("subcontents")
-        .doc(  grade + "_" + subcontent  );
+    var lastWatchedPath = grade + "_" + subject + "_" + content + "_" + subcontent;
+    localStorage.setItem("lastWatchedPath", lastWatchedPath);
+    displayTitle(subcontent);
 
-    // Check if the subcontent document exists and has a 'videos' field
-    subcontentRef.get()
-        .then(function (doc) {
-            if (doc.exists && doc.data().videos) {
-                // If videos are already available in the 'videos' field
-                console.log("Fetching videos from subcontent document...");
-                var videos = doc.data().videos;
-                console.log("Fetched Videos:", videos);
+    var contentId = grade + "_" + subject + "_" + content;
+    var contentRef = db.collection("contents").doc(contentId);
+
+    contentRef.get().then(function (doc) {
+        var subcontents = [];
+        if (doc.exists) {
+            var contentData = doc.data();
+            subcontents = contentData.subcontents || [];
+
+            var subcontentData = subcontents.find(function (item) {
+                return item.subcontent === subcontent;
+            });
+
+            if (subcontentData && subcontentData.videos) {
+                console.log("Fetching videos from Firestore...");
+                localStorage.setItem("videoList", JSON.stringify(subcontentData.videos));
+                window.location.href = "/index.html";
+                updateVideoList(subcontentData.videos);
+                return;
+            }
+        }
+
+        console.log("No videos found, fetching from YouTube...");
+        var query = getQuery(grade, subcontent);
+        console.log("query: " +query);
+
+        fetchYouTubeVideos(query, 50, function (youtubeVideos) {
+            if (youtubeVideos.length > 0) {
+                var videosData = youtubeVideos.map(function (video) {
+                    return {
+                        videoId: video.videoId,
+                        title: video.title,
+                        channelTitle: video.channelTitle,
+                        publishedAt: video.publishedAt,
+                        thumbnails: video.thumbnails,
+                        grade: grade,
+                        subject: subject,
+                        content: content,
+                        subcontent: subcontent
+                    };
+                });
+
+                updateFirestore(contentRef, subcontent, videosData);
+            } else {
+                console.log("No suitable YouTube videos found.");
+            }
+        });
+    }).catch(function (error) {
+        console.error("Error fetching content document:", error);
+    });
+}
+
+function updateFirestore(contentRef, subcontent, videosData) {
+    console.log("Updating Firestore for:", contentRef.id);
+
+    var idParts = contentRef.id.split("_");
+    if (idParts.length < 3) {
+        console.error("Invalid document ID format:", contentRef.id);
+        return Promise.reject("Invalid document ID format: " + contentRef.id);
+    }
+
+    var grade = idParts[0] || "Unknown";
+    var subject = idParts[1] || "Unknown";
+    var content = idParts[2] || "Unknown";
+
+    console.log("Parsed values - Grade:", grade, "Subject:", subject, "Content:", content, "Subcontent:", subcontent);
+
+    // Ensure subcontent and videosData are not undefined
+    if (!subcontent) {
+        console.error("subcontent is undefined! Assigning default value.");
+        subcontent = "Unknown Subcontent";
+    }
+
+    videosData = Array.isArray(videosData) ? videosData : [];
+
+    return contentRef.get().then((doc) => {
+        let subcontents = [];
+
+        if (doc.exists && doc.data().subcontents) {
+            subcontents = doc.data().subcontents;
+        }
+
+        // Remove undefined values from videosData
+        videosData = videosData.filter(video => video !== undefined && video !== null);
+
+        // Remove undefined fields dynamically
+        function removeUndefinedFields(obj) {
+            return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+        }
+
+        // Push cleaned data
+        subcontents.push(removeUndefinedFields({
+            subcontent: subcontent,
+            videos: videosData
+        }));
+
+        // Prepare Firestore data
+        const firestoreData = removeUndefinedFields({
+            grade: grade,
+            subject: subject,
+            content: content,
+            subcontents: subcontents
+        });
+
+        console.log("Saving to Firestore:",  JSON.parse(JSON.stringify(firestoreData)));
+
+        return contentRef.set( JSON.parse(JSON.stringify(firestoreData)), { merge: true })
+            .then(function () {
+                console.log("YouTube videos added to subcontents array in subcontent document.");
 
                 // Save the fetched videos to localStorage
-                localStorage.setItem("videoList", JSON.stringify(videos));
+                localStorage.setItem("videoList", JSON.stringify(videosData));
 
                 // Redirect to the main page if not already there
                 if (window.location.pathname !== "/index.html") {
@@ -331,64 +391,15 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
                 }
 
                 // Update the video list on the page
-                updateVideoList(videos);
-            } else {
-                // If no videos are available, fetch from YouTube
-                console.log("No videos found in subcontent document. Fetching from YouTube...");
-                var query = getQuery(grade, subcontent);
-                console.log("Query:", query);
-
-                fetchYouTubeVideos(query, 50, function (youtubeVideos) {
-                    if (youtubeVideos.length > 0) {
-                        // Save the fetched YouTube videos to the 'videos' field in the subcontent document
-                        var videosData = youtubeVideos.map(function (video) {
-                            return {
-                                videoId: video.videoId,
-                                title: video.title,
-                                channelTitle: video.channelTitle,
-                                publishedAt: video.publishedAt,
-                                thumbnails: video.thumbnails,
-                                grade: grade,
-                                subject: subject,
-                                content: content,
-                                subcontent: subcontent,
-
-                            };
-                        });
-
-                        subcontentRef.set({
-                            grade: grade,
-                            subject: subject,
-                            content: content,
-                            subcontent: subcontent,
-                            videos: videosData
-                        }, { merge: true }) // Merge to avoid overwriting other fields
-                            .then(function () {
-                                console.log("YouTube videos saved to subcontent document.");
-                                // Save the fetched videos to localStorage
-                                localStorage.setItem("videoList", JSON.stringify(videosData));
-
-                                // Redirect to the main page if not already there
-                                if (window.location.pathname !== "/index.html") {
-                                    window.location.href = "/index.html";
-                                }
-
-                                // Update the video list on the page
-                                updateVideoList(videosData);
-                            })
-                            .catch(function (error) {
-                                console.error("Error saving YouTube videos to subcontent document:", error);
-                            });
-                    } else {
-                        console.log("No suitable YouTube videos found.");
-                    }
-                });
-            }
-        })
-        .catch(function (error) {
-            console.error("Error fetching subcontent document:", error);
-        });
+                updateVideoList(videosData);
+            })
+            .catch(function (error) {
+                console.error("Error updating subcontents array in Firestore:", error);
+            });
+    });
 }
+
+
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -540,17 +551,28 @@ handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,sub
   }
   //=========================== search ==============================
   function fetchSubcontentsForGrade(grade) {
-    return db.collectionGroup("subcontents")
+    return db.collection("subcontents")
         .where("grade", "==", grade) // Filter by grade
         .get()
         .then(function (querySnapshot) {
             allSubcontents = querySnapshot.docs.map(function (doc) {
                 // Create a new object and copy properties from doc.data()
+
                 return Object.assign({}, doc.data());
+
             });
             console.log("Subcontents fetched:", allSubcontents);
+            getSizeOfObjects(allSubcontents,"allSubcontents");
         })
         .catch(function (error) {
             console.error("Error fetching subcontents:", error);
         });
+}
+function getSizeOfObjects(objects,objectName) {
+    const jsonString = JSON.stringify(objects);
+    const blob = new Blob([jsonString]);
+    console.log(objectName);
+    console.log("Size in bytes:", blob.size);
+    console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
+    console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
 }

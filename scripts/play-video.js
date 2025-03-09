@@ -102,74 +102,80 @@ function onPlayerStateChange(event) {
 
 // Handle DOM Content Load
 document.addEventListener("DOMContentLoaded", function () {
+    if(navigator.onLine){
+        var signUpButton=document.getElementById('signUpButton');
+        var signInButton=document.getElementById('signInButton');
+        var signInForm=document.getElementById('signIn');
+        var signUpForm=document.getElementById('signup');
+        signUpButton.addEventListener('click',function(){
+            signInForm.style.display="none";
+            signUpForm.style.display="block";
+        })
+        signInButton.addEventListener('click', function(){
+            signInForm.style.display="block";
+            signUpForm.style.display="none";
+        })
 
-    var signInForm=document.getElementById('signIn');
-    var signUpForm=document.getElementById('signup');
-    signUpButton.addEventListener('click',function(){
-        signInForm.style.display="none";
-        signUpForm.style.display="block";
-    })
-    signInButton.addEventListener('click', function(){
-        signInForm.style.display="block";
-        signUpForm.style.display="none";
-    })
+        var nickName = localStorage.getItem("nickName");
+        if (nickName) {
+            document.getElementById("nickName").innerText = nickName;
+            document.getElementById("title").innerText = nickName;
+        }
+        if (nickName === 'abye') {
+            // Change the user icon to the desired image
+            document.getElementById('userIcon').src = '/images/abye.JPG';
+        }
+        if (nickName === 'yabran') {
+            // Change the user icon to the desired image
+            document.getElementById('userIcon').src = '/images/yabran.JPG';
+        }
+        // Populate Right Sidebar with Videos
+        if (videoList.length) {
+            var rightSidebar = document.querySelector(".right-sidebar");
+            rightSidebar.innerHTML = "";
 
-    var nickName = localStorage.getItem("nickName");
-    if (nickName) {
-        document.getElementById("nickName").innerText = nickName;
-        document.getElementById("title").innerText = nickName;
-    }
-    if (nickName === 'abye') {
-        // Change the user icon to the desired image
-        document.getElementById('userIcon').src = '/images/abye.JPG';
-    }
-    if (nickName === 'yabran') {
-        // Change the user icon to the desired image
-        document.getElementById('userIcon').src = '/images/yabran.JPG';
-    }
-    // Populate Right Sidebar with Videos
-    if (videoList.length) {
-        var rightSidebar = document.querySelector(".right-sidebar");
-        rightSidebar.innerHTML = "";
+            videoList.forEach(function (video) {
+                var videoElement = document.createElement("div");
+                videoElement.classList.add("side-video-list");
 
-        videoList.forEach(function (video) {
-            var videoElement = document.createElement("div");
-            videoElement.classList.add("side-video-list");
+                var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
+                                video.thumbnails.medium : (video.thumbnails && video.thumbnails.default) ?
+                                video.thumbnails.default : "";
 
-            var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
-                            video.thumbnails.medium : (video.thumbnails && video.thumbnails.default) ?
-                            video.thumbnails.default : "";
+                videoElement.innerHTML =
+                    '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
+                    '<img src="' + thumbnail + '" alt="Thumbnail">' +
+                    '</div>' +
+                    '<div class="vid-info">' +
+                    '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
+                    '<p>' + video.channelTitle + '</p>' +
+                    '</div>';
 
-            videoElement.innerHTML =
-                '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
-                '<img src="' + thumbnail + '" alt="Thumbnail">' +
-                '</div>' +
-                '<div class="vid-info">' +
-                '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
-                '<p>' + video.channelTitle + '</p>' +
-                '</div>';
+                rightSidebar.appendChild(videoElement);
+            });
 
-            rightSidebar.appendChild(videoElement);
-        });
-
-        // Add click event listeners to video elements
-        var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
-       // Convert NodeList to an array manually and add event listeners
-                var i;
-                for (i = 0; i < videoElements.length; i++) {
-                    (function (element) {
-                        element.addEventListener("click", function () {
-                            var videoId = element.getAttribute("data-video-id");
-                            playVideo(videoId);
-                            localStorage.setItem('videoId', videoId);
-                            checkFavourited(videoId);
-                             // Call the function to play the video
-                        });
-                    })(videoElements[i]); // IIFE to correctly capture element reference
-                }
-                    } else {
-                        console.log("No videos found in localStorage.");
+            // Add click event listeners to video elements
+            var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
+           // Convert NodeList to an array manually and add event listeners
+                    var i;
+                    for (i = 0; i < videoElements.length; i++) {
+                        (function (element) {
+                            element.addEventListener("click", function () {
+                                var videoId = element.getAttribute("data-video-id");
+                                playVideo(videoId);
+                                localStorage.setItem('videoId', videoId);
+                                checkFavourited(videoId);
+                                 // Call the function to play the video
+                            });
+                        })(videoElements[i]); // IIFE to correctly capture element reference
                     }
+                        } else {
+                            console.log("No videos found in localStorage.");
+                        }
+    }
+else{
+    console.log("No internet!!");
+}
                 });
 
 

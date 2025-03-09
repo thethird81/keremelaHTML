@@ -56,9 +56,16 @@ nav{
 .nav-left .menu-icon{
     width: 22px;
     margin-right: 25px;
+    height: 23px;
 }
 .nav-left .logo{
-    width: 130px;
+    width: 120px;
+    height: 23px;
+
+}
+.nav-left .logo-text{
+    width: 50px;
+    height: 23px;
 
 }
 .nav-middle .mic-icon{

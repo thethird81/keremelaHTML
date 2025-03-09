@@ -10,7 +10,6 @@ var loggedInUserId = localStorage.getItem('loggedInUserId');
 var container = document.querySelector(".container");
 var signOutButton = document.getElementById('signOut');
 
-var age ;
 
 
 
@@ -30,7 +29,8 @@ var db = firebase.firestore();
 // });
 
 document.addEventListener('DOMContentLoaded', function () {
-
+    var signUpButton=document.getElementById('signUpButton');
+    var signInButton=document.getElementById('signInButton');
     var signInForm=document.getElementById('signIn');
     var signUpForm=document.getElementById('signup');
     signUpButton.addEventListener('click',function(){
@@ -53,7 +53,7 @@ var slidingText = document.querySelector(".sliding-text");
         joinUs.style.display = "none";
         slidingText.style.display = "none";
     var nickName = localStorage.getItem('nickName');
-    var age = localStorage.getItem('age');
+
     var grade = localStorage.getItem('grade');
     var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
 
@@ -66,11 +66,7 @@ var slidingText = document.querySelector(".sliding-text");
 
     updateVideoList(videoList);
 
-    if (!nickName || !age) {
-        //alert("User data is missing. Redirecting to login page.");
-        //window.location.href = '/index.html';
-        return;
-    }
+
 
     // Display nickName in the navbar
     document.getElementById('nickName').innerText = nickName;
@@ -245,6 +241,7 @@ function fetchAndMergeQuizzes() {
         Promise.all(fetchPromises).then(function () {
             localStorage.setItem("questions", JSON.stringify(mergedQuestions));
             console.log("Merged quiz saved to local storage:", mergedQuestions);
+            getSizeOfObjects(mergedQuestions,"mergedQuestions");
         });
 
     }).catch(function (error) {
@@ -297,52 +294,7 @@ signOutButton.addEventListener('click', function() {
         console.error("UserId or LastWatchedPath is missing in localStorage.");
     }
 });
-// Fetch videos from Firebase by topic
-function fetchVideosFromFirebase(topic) {
 
-    var age = localStorage.getItem('age');
-
-    console.log("Retrieved Age:", age);
-    console.log("Age Type:", typeof age);
-
-    // Create a reference to the 'youtubeVideos' collection
-    var videosRef = db.collection("youtubeVideos");
-    let q;
-
-    if (age) {
-        if (topic === 'All Videos') {
-            q = videosRef.where("ageGroup", "==", age).limit(50);
-            console.log("Query for All Videos with Age:", age);
-        } else {
-            q = videosRef.where("topic", "==", topic).where("ageGroup", "==", age);
-            console.log("Query for Topic:", topic, "and Age:", age);
-        }
-
-        // Get the documents that match the query
-        q.get().then(function (querySnapshot) {
-            if (!querySnapshot.empty) {
-                var videos = querySnapshot.docs.map(function (doc) {
-                    return doc.data();
-                });
-                console.log("Fetched Videos:", videos);
-                // Save the fetched videos to localStorage
-                localStorage.setItem("videoList", JSON.stringify(videos));
-                updateVideoList(videos);
-
-            } else {
-                console.log("No videos found for topic:", topic);
-            }
-        }).catch(function (error) {
-            console.error("Error Fetching Videos:", error);
-        });
-    } else {
-        console.log("Age is null or undefined");
-    }
-
-    // Highlight the selected topic in the sidebar
-    console.log("Highlighting Topic:", topic);
-   // highlightSelectedTopic(topic);
-}
 // Function to update user favorites in Firestore on sign out (ES5 Compatible)
 function updateFavoritesOnSignOut() {
     var userId = localStorage.getItem('loggedInUserId');
@@ -379,7 +331,8 @@ function updateVideoList(videos) {
             videoElement.classList.add("vid-list");
 
             // Select thumbnail resolution (prefer medium, fallback to default)
-            var thumbnail = video.thumbnails && video.thumbnails.high ? video.thumbnails.medium : video.thumbnails && video.thumbnails.default;
+           // var thumbnail = video.thumbnails && video.thumbnails.high ? video.thumbnails.medium : video.thumbnails && video.thumbnails.default;
+           var thumbnail = video.thumbnails && (video.thumbnails.high || video.thumbnails.medium || video.thumbnails.default);
 
             // Create video item
             videoElement.innerHTML = "<a href='pages/play-video.html?videoId=" + video.videoId + "&enablejsapi=1'>" +
@@ -397,7 +350,6 @@ function updateVideoList(videos) {
         });
     }
 }
-
 
 
 
