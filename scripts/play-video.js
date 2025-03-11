@@ -535,7 +535,33 @@ function checkFavourited (videoId){
 //============================ on load ===================
 
 document.addEventListener('DOMContentLoaded', function () {
-    var slidingText = document.querySelector(".sliding-text");
+var slidingText = document.querySelector(".sliding-text");
+// Get references to necessary elements
+var iframeOverlay = document.getElementById("iframeOverlay");
+var youtubeLogoOverlay = document.querySelector(".youtube-logo-overlay");
+var body = document.body;
+
+// Function to toggle full screen mode
+function toggleFullScreen() {
+    // Check if the class is already added
+    if (body.className.indexOf("fullscreen-mode") === -1) {
+        body.className += " fullscreen-mode";  // Add the fullscreen-mode class
+    } else {
+        body.className = body.className.replace(" fullscreen-mode", "");  // Remove it
+    }
+}
+
+// For Modern Browsers
+if (youtubeLogoOverlay.addEventListener) {
+    youtubeLogoOverlay.addEventListener("click", toggleFullScreen);
+}
+// For Older Browsers (IE 8 and below)
+else if (youtubeLogoOverlay.attachEvent) {
+    youtubeLogoOverlay.attachEvent("onclick", toggleFullScreen);
+}
+
+
+var slidingText = document.querySelector(".sliding-text");
 if(loggedInUserId){
     joinUs.style.display = "none";
     slidingText.style.display = "none";
@@ -553,3 +579,37 @@ else{
 
 });
 
+
+
+
+function adjustIframeOrientation() {
+    var iframeContainer = document.getElementById("youtube-player");
+
+    if (!iframeContainer) {
+        console.warn("YouTube player container not found.");
+        return;
+    }
+
+    var iframe = iframeContainer.querySelector("iframe");
+
+    if (!iframe) {
+        console.warn("Iframe not found inside #youtube-player.");
+        return;
+    }
+
+    if (window.innerWidth < 950) {
+        // Portrait mode: Adjust height dynamically
+        iframe.style.width = "100%";
+        iframe.style.height = "56vw"; // Maintain 16:9 aspect ratio
+    } else {
+        // Landscape mode: Make it fullscreen
+        iframe.style.width = "100%";
+        iframe.style.height = "100vh";
+    }
+}
+
+// Ensure the function runs when the page loads and on resize
+window.addEventListener("resize", adjustIframeOrientation);
+window.addEventListener("load", () => {
+    setTimeout(adjustIframeOrientation, 500); // Wait a bit for iframe to load
+});

@@ -325,11 +325,11 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
 }
 
 function updateFirestore(contentRef, subcontent, videosData) {
-    console.log("Updating Firestore for:", contentRef.id);
+    console.log("Updating Firestore for:" + contentRef.id);
 
     var idParts = contentRef.id.split("_");
     if (idParts.length < 3) {
-        console.error("Invalid document ID format:", contentRef.id);
+        console.error("Invalid document ID format:" + contentRef.id);
         return Promise.reject("Invalid document ID format: " + contentRef.id);
     }
 
@@ -337,7 +337,7 @@ function updateFirestore(contentRef, subcontent, videosData) {
     var subject = idParts[1] || "Unknown";
     var content = idParts[2] || "Unknown";
 
-    console.log("Parsed values - Grade:", grade, "Subject:", subject, "Content:", content, "Subcontent:", subcontent);
+    console.log("Parsed values - Grade:" + grade + ", Subject:" + subject + ", Content:" + content + ", Subcontent:" + subcontent);
 
     // Ensure subcontent and videosData are not undefined
     if (!subcontent) {
@@ -345,21 +345,29 @@ function updateFirestore(contentRef, subcontent, videosData) {
         subcontent = "Unknown Subcontent";
     }
 
-    videosData = Array.isArray(videosData) ? videosData : [];
+    videosData = Object.prototype.toString.call(videosData) === "[object Array]" ? videosData : [];
 
-    return contentRef.get().then((doc) => {
-        let subcontents = [];
+    return contentRef.get().then(function (doc) {
+        var subcontents = [];
 
         if (doc.exists && doc.data().subcontents) {
             subcontents = doc.data().subcontents;
         }
 
         // Remove undefined values from videosData
-        videosData = videosData.filter(video => video !== undefined && video !== null);
+        videosData = videosData.filter(function (video) {
+            return video !== undefined && video !== null;
+        });
 
         // Remove undefined fields dynamically
         function removeUndefinedFields(obj) {
-            return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+            var cleanedObj = {};
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+                    cleanedObj[key] = obj[key];
+                }
+            }
+            return cleanedObj;
         }
 
         // Push cleaned data
@@ -369,16 +377,16 @@ function updateFirestore(contentRef, subcontent, videosData) {
         }));
 
         // Prepare Firestore data
-        const firestoreData = removeUndefinedFields({
+        var firestoreData = removeUndefinedFields({
             grade: grade,
             subject: subject,
             content: content,
             subcontents: subcontents
         });
 
-        console.log("Saving to Firestore:",  JSON.parse(JSON.stringify(firestoreData)));
+        console.log("Saving to Firestore:", JSON.parse(JSON.stringify(firestoreData)));
 
-        return contentRef.set( JSON.parse(JSON.stringify(firestoreData)), { merge: true })
+        return contentRef.set(JSON.parse(JSON.stringify(firestoreData)), { merge: true })
             .then(function () {
                 console.log("YouTube videos added to subcontents array in subcontent document.");
 
@@ -398,7 +406,6 @@ function updateFirestore(contentRef, subcontent, videosData) {
             });
     });
 }
-
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -562,17 +569,17 @@ handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,sub
 
             });
             console.log("Subcontents fetched:", allSubcontents);
-            getSizeOfObjects(allSubcontents,"allSubcontents");
+
         })
         .catch(function (error) {
             console.error("Error fetching subcontents:", error);
         });
 }
-function getSizeOfObjects(objects,objectName) {
-    const jsonString = JSON.stringify(objects);
-    const blob = new Blob([jsonString]);
-    console.log(objectName);
-    console.log("Size in bytes:", blob.size);
-    console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
-    console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
-}
+// function getSizeOfObjects(objects,objectName) {
+//     const jsonString = JSON.stringify(objects);
+//     const blob = new Blob([jsonString]);
+//     console.log(objectName);
+//     console.log("Size in bytes:", blob.size);
+//     console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
+//     console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
+// }

@@ -6,7 +6,7 @@
 
 }
 .play-video-page {
-    overflow: hidden;
+
     height: 100vh;
 }
 a{
@@ -59,8 +59,8 @@ nav{
     height: 23px;
 }
 .nav-left .logo{
-    width: 120px;
-    height: 23px;
+    width: 200px;
+    height: 50px;
 
 }
 .nav-left .logo-text{
@@ -433,8 +433,30 @@ nav{
 .side-video-list .vid-info{
     flex-basis: 49%;
 }
-@media (max-width:900px){
+@media (orientation: landscape) {
+    .fullscreen-mode .play-video {
+        flex-basis: 80%!important;;
+    }
+    .fullscreen-mode .flex-div{
+        display: none;
+    }
 
+}
+@media (max-width:1000px){
+    .fullscreen-mode .iframe-container {
+        flex-direction: column;
+        width: 100vw;
+        height: 56vw;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .side-video-list{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+    }
     .container ,.large-container{
     padding-left: 1%;
     padding-right: 1%
@@ -546,5 +568,65 @@ nav{
     }
     to {
         transform: translateX(-70%);
+    }
+}
+
+/* For Full Screen Mode */
+.fullscreen-mode .container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+.fullscreen-mode .row {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fullscreen-mode .play-video {
+    flex-basis: 90%;
+}
+
+.fullscreen-mode .nav-left,
+.fullscreen-mode .nav-middle,
+.fullscreen-mode .nav-right,
+.fullscreen-mode .sidebar,
+.fullscreen-mode .right-sidebar {
+    display: none;
+}
+
+/* Adjust for Small Screens (Portrait Mode) */
+@media screen and (max-width: 768px) {
+    .fullscreen-mode .iframe-container {
+        flex-direction: column;
+        width: 100vw;
+        height: 56vw;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .fullscreen-mode .play-video {
+        width: 100%;
+        height: auto;
+    }
+
+    .fullscreen-mode iframe {
+        width: 100%;
+        height: 56vw; /* Maintains a 16:9 aspect ratio */
+    }
+}
+
+/* For Very Small Screens (Phones) */
+@media screen and (max-width: 480px) {
+    .nav-left .logo{
+        width: 120px;
+        height: 28px;
+
+    }
+    .fullscreen-mode iframe {
+        width: 100%;
+        height: 90vh; /* Uses most of the screen height */
     }
 }
