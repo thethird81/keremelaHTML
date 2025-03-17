@@ -241,7 +241,7 @@ function fetchAndMergeQuizzes() {
         Promise.all(fetchPromises).then(function () {
             localStorage.setItem("questions", JSON.stringify(mergedQuestions));
             console.log("Merged quiz saved to local storage:", mergedQuestions);
-            getSizeOfObjects(mergedQuestions,"mergedQuestions");
+            //getSizeOfObjects(mergedQuestions,"mergedQuestions");
         });
 
     }).catch(function (error) {
