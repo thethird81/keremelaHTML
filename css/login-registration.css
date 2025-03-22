@@ -189,6 +189,7 @@ button:hover {
     font-size: 1rem;
     opacity: 0;
     animation: fadeOut 7s forwards;
+    margin-bottom: 10px;
 }
 
 /* Modal */
@@ -301,7 +302,7 @@ button:hover {
 /* Select Dropdown Style */
 .grade-dropdown select {
     width: 100%;
-    padding: 10px 12px;
+
     background-color: transparent;
     border: 2px solid #ffffff;
     border-radius: 6px;

@@ -224,7 +224,7 @@ function getQuery(grade, subcontent) {
         query =subcontent + " for toddler";
     } else if (grade === '3') {
 
-        query = subcontent ;
+        query = "grade 3 " + subcontent ;
     } else {
 
         query = "grade " + grade  + " " + subcontent
@@ -325,87 +325,62 @@ function handleSubcontentClick(grade, subject, content, subcontent) {
 }
 
 function updateFirestore(contentRef, subcontent, videosData) {
-    console.log("Updating Firestore for:" + contentRef.id);
+    console.log("Updating Firestore for: " + contentRef.id);
 
-    var idParts = contentRef.id.split("_");
-    if (idParts.length < 3) {
-        console.error("Invalid document ID format:" + contentRef.id);
-        return Promise.reject("Invalid document ID format: " + contentRef.id);
-    }
-
-    var grade = idParts[0] || "Unknown";
-    var subject = idParts[1] || "Unknown";
-    var content = idParts[2] || "Unknown";
-
-    console.log("Parsed values - Grade:" + grade + ", Subject:" + subject + ", Content:" + content + ", Subcontent:" + subcontent);
-
-    // Ensure subcontent and videosData are not undefined
     if (!subcontent) {
-        console.error("subcontent is undefined! Assigning default value.");
-        subcontent = "Unknown Subcontent";
+        console.error("Subcontent is undefined! Assigning default value.");
+        return Promise.reject("Subcontent is required.");
     }
 
-    videosData = Object.prototype.toString.call(videosData) === "[object Array]" ? videosData : [];
+    videosData = Object.prototype.toString.call(videosData) === "[object Array]" ? videosData.filter(Boolean) : [];
 
     return contentRef.get().then(function (doc) {
-        var subcontents = [];
-
-        if (doc.exists && doc.data().subcontents) {
-            subcontents = doc.data().subcontents;
-        }
-
-        // Remove undefined values from videosData
-        videosData = videosData.filter(function (video) {
-            return video !== undefined && video !== null;
-        });
-
-        // Remove undefined fields dynamically
-        function removeUndefinedFields(obj) {
-            var cleanedObj = {};
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
-                    cleanedObj[key] = obj[key];
-                }
-            }
-            return cleanedObj;
-        }
-
-        // Push cleaned data
-        subcontents.push(removeUndefinedFields({
-            subcontent: subcontent,
-            videos: videosData
-        }));
-
-        // Prepare Firestore data
-        var firestoreData = removeUndefinedFields({
-            grade: grade,
-            subject: subject,
-            content: content,
-            subcontents: subcontents
-        });
-
-        console.log("Saving to Firestore:", JSON.parse(JSON.stringify(firestoreData)));
-
-        return contentRef.set(JSON.parse(JSON.stringify(firestoreData)), { merge: true })
-            .then(function () {
-                console.log("YouTube videos added to subcontents array in subcontent document.");
-
-                // Save the fetched videos to localStorage
-                localStorage.setItem("videoList", JSON.stringify(videosData));
-
-                // Redirect to the main page if not already there
-                if (window.location.pathname !== "/index.html") {
-                    window.location.href = "/index.html";
-                }
-
-                // Update the video list on the page
-                updateVideoList(videosData);
-            })
-            .catch(function (error) {
-                console.error("Error updating subcontents array in Firestore:", error);
+        if (!doc.exists) {
+            console.log("Document does not exist. Creating a new one.");
+            return contentRef.set({
+                subcontents: [{ subcontent: subcontent, videos: videosData }]
             });
+        }
+
+        var subcontents = doc.data().subcontents || [];
+        var subcontentFound = false;
+
+        // Update the existing subcontent object if found
+        for (var i = 0; i < subcontents.length; i++) {
+            if (subcontents[i].subcontent === subcontent) {
+                subcontentFound = true;
+                subcontents[i].videos = Object.prototype.toString.call(subcontents[i].videos) === "[object Array]" ?
+                    subcontents[i].videos.concat(videosData) : videosData;
+                break;
+            }
+        }
+
+        // If subcontent was not found, add a new one
+        if (!subcontentFound) {
+            subcontents.push({ subcontent: subcontent, videos: videosData });
+        }
+
+        console.log("Saving to Firestore:", JSON.stringify({ subcontents }, null, 2));
+
+        return contentRef.update({ subcontents }).then(function () {
+            console.log("Videos successfully updated in Firestore.");
+
+            // Save to local storage
+            localStorage.setItem("videoList", JSON.stringify(videosData));
+
+            // Redirect if not on the main page
+            if (window.location.pathname !== "/index.html") {
+                window.location.href = "/index.html";
+            }
+
+            // Update the video list on the page
+            updateVideoList(videosData);
+        });
+    }).catch(function (error) {
+        console.error("Error updating Firestore:", error);
     });
 }
+
 
 
 document.addEventListener("DOMContentLoaded", function() {

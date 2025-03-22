@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var signInButton=document.getElementById('signInButton');
     var signInForm=document.getElementById('signIn');
     var signUpForm=document.getElementById('signup');
+
     signUpButton.addEventListener('click',function(){
         signInForm.style.display="none";
         signUpForm.style.display="block";
@@ -43,31 +44,24 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     var joinUs = document.getElementById('joinUs');
-var userIcon = document.getElementById('userIcon');
-var dropdownMenu = document.getElementById('dropdownMenu');
-var searchBox = document.querySelector(".search-box");
-var slidingText = document.querySelector(".sliding-text");
+    var userIcon = document.getElementById('userIcon');
+    var dropdownMenu = document.getElementById('dropdownMenu');
+    var searchBox = document.querySelector(".search-box");
+    var slidingText = document.querySelector(".sliding-text");
+    var coinCountElement = document.getElementById("coinCount");
+    var coinImgElement = document.getElementById("coinIcon");
     if(loggedInUserId)
     {
 
-        joinUs.style.display = "none";
-        slidingText.style.display = "none";
-    var nickName = localStorage.getItem('nickName');
 
+
+    var nickName = localStorage.getItem('nickName');
     var grade = localStorage.getItem('grade');
     var storedSelectedQuizList = localStorage.getItem('selectedQuizList');
-
-
-
-
-
-
    var videoList = JSON.parse(localStorage.getItem('videoList'));
+   var coins = localStorage.getItem('coins');
 
-    updateVideoList(videoList);
-
-
-
+   coinCountElement.textContent = coins;
     // Display nickName in the navbar
     document.getElementById('nickName').innerText = nickName;
     document.getElementById("title").innerText = nickName;
@@ -79,33 +73,53 @@ var slidingText = document.querySelector(".sliding-text");
         // Change the user icon to the desired image
         document.getElementById('userIcon').src = '/images/yabran.JPG';
     }
+    if (grade != "KG"){
+        coinContainer.style.display="block";
+    }
+/*========================= user side bar=======================*/
 
-    // Generate age-specific sidebar
+   // Add click event listeners for menu items
+        document.getElementById("myProfile").addEventListener('click', function() {
+            console.log("Profile clicked");
+        });
 
-    var savedTopic = localStorage.getItem("selectedTopic");
-        var selectedTopic;
+        document.getElementById("settings").addEventListener('click', function() {
+            console.log("Settings clicked");
+        });
+        document.getElementById("contactUs").addEventListener('click', function() {
+            window.open('/pages/contact-us.html', '_blank');
+            console.log("Contact Us clicked");
+        });
 
-        if (savedTopic) {
-            // If a topic is saved in localStorage, use it
-            selectedTopic = JSON.parse(savedTopic);
-        } else {
-            // Otherwise, select a random topic
-            selectedTopic = {topic:'All Videos'};
-            localStorage.setItem("selectedTopic", JSON.stringify(selectedTopic));
-        }
+        document.getElementById("logout").addEventListener('click', function() {
+            var userId = localStorage.getItem('loggedInUserId');
+    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
+    console.log("UserId:", userId);
+    console.log("LastWatchedPath:", lastWatchedPath);
 
-
-    userIcon.addEventListener('click', function () {
-        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-    });
-
-    // Close the dropdown when clicking outside
-    document.addEventListener('click', function (event) {
-        if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.style.display = 'none';
-        }
-    });
+    if (userId ) {
+        updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
+            .then(function() {
+                updateFavoritesOnSignOut();
+                // Clear localStorage and sign out after Firestore update completes
+                localStorage.clear();
+                auth.signOut()
+                    .then(function() {
+                        console.log('User signed out successfully');
+                        window.location.href = '/index.html';
+                    })
+                    .catch(function(error) {
+                        console.error('Error signing out:', error);
+                    });
+            })
+            .catch(function(error) {
+                console.error("Error during Firestore update:", error);
+            });
+    } else {
+        console.error("UserId or LastWatchedPath is missing in localStorage.");
+    }
+        });
 
 
     if (storedSelectedQuizList !== null)
@@ -150,18 +164,18 @@ var slidingText = document.querySelector(".sliding-text");
         console.log("Error getting documents: ", error);
     });
         }
-
-
-
+        updateVideoList(videoList);
 
     }
     else{
-
+        joinUs.style.display = "block";
+        slidingText.style.display = "block";
+        coinCountElement.style.display = "none";
+        coinImgElement.style.display = "none";
         userIcon.style.display = "none";
         searchBox.style.display = "none";
         joinUs.addEventListener("click",function(){
-            var sidebar = document.querySelector(".sidebar");
-            sidebar.classList.add("visible");
+            displaySidebar();
         });
 
 
@@ -196,6 +210,29 @@ var slidingText = document.querySelector(".sliding-text");
 
 
 
+    }
+
+});
+
+function displaySidebar(){
+    var sidebar = document.querySelector(".sidebar");
+            sidebar.classList.add("visible");
+}
+
+// Close sidebar when clicking anywhere outside
+document.addEventListener('click', function(event) {
+    var userSidebar = document.querySelector(".userSidebar");
+    var sidebar = document.querySelector(".sidebar");
+    var userIcon = document.getElementById("userIcon");
+
+
+    // Close the sidebar if clicked outside the user icon or the sidebar
+    if (!userSidebar.contains(event.target) && event.target !== userIcon) {
+        userSidebar.classList.remove("visible"); // Removes 'visible' class to hide the sidebar
+
+    }else{
+        userSidebar.classList.toggle("visible");
+        sidebar.classList.remove("visible");
     }
 
 });
@@ -252,9 +289,10 @@ function fetchAndMergeQuizzes() {
 function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
     var db = firebase.firestore();
     var userRef = db.collection("users").doc(userId);
-
+    var coins = localStorage.getItem("coins");
     return userRef.update({
-        lastWatchedPath: lastWatchedPath
+        lastWatchedPath: lastWatchedPath,
+        coins:coins,
     })
     .then(function() {
         console.log("lastWatchedPath updated successfully!");
@@ -351,5 +389,6 @@ function updateVideoList(videos) {
     }
 }
 
+/*======================= user sidebar ===================*/
 
 

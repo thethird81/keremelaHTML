@@ -18,9 +18,15 @@ localStorage.setItem('videoId', videoId);
 var iframeOverlay = document.getElementById('iframeOverlay');
 var userIcon = document.getElementById('userIcon');
 var searchBox = document.querySelector(".search-box");
+var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 var currentVideoIndex = 0;
 var currentQuestionIndex = 0;
 var player;
+var videoDuration = 0; // Stores video duration
+var earnedCoin = false; // Prevent multiple coin rewards
+var interval = null; // Interval for counting time
+var watchTime = 0; // Tracks continuous watch time
+var lastTime = 0; // Tracks last known time
 
 // Load YouTube IFrame API asynchronously
 var tag = document.createElement("script");
@@ -70,24 +76,47 @@ function onYouTubeIframeAPIReady() {
 
 // The API will call this function when the video player is ready.
 function onPlayerReady(event) {
-    player.playVideo();
+    //update coin
+    //check remaining coint
+
     if(loggedInUserId)
     {
-        var lastWatchedPath = localStorage.getItem('lastWatchedPath');
-        var lastWatchedPathParts = lastWatchedPath.split("_");
-         if (lastWatchedPathParts[1]=='Entertainment')
-             displayQuestion();
+
+        var coinCountElement = document.getElementById("coinCount");
+        var selectedSubject = getSelectedPart(1);
+         if (selectedSubject == 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1"){
+
+            var coins = subtructCoins();
+            if(coins < 0 ){
+                showNotEnoughCoinsModal();
+                console.log("Please get more coin!!");
+
+            }else{
+                localStorage.setItem("coins",coins);
+                coinCountElement.textContent = coins;
+                player.playVideo();
+                displayQuestion();
+            }
+
+
+         }else{
+
+            player.playVideo();
+         }
+
+     }else{
+        player.playVideo();
      }
     }
 
 
 // The API calls this function when the player's state changes.
 function onPlayerStateChange(event) {
-    console.log("Player state changed:", event.data);
+    var selectedSubject = getSelectedPart(1);
     if (event.data === YT.PlayerState.ENDED) {
         var nextVideoId = getNextVideoId();
         if (nextVideoId) {
-            console.log("Player state changed:", nextVideoId.videoId);
+
             localStorage.setItem('videoId', nextVideoId.videoId);
             checkFavourited(nextVideoId.videoId);
             player.loadVideoById(nextVideoId);
@@ -96,6 +125,69 @@ function onPlayerStateChange(event) {
             console.warn("No next video found.");
         }
     }
+
+        if (event.data === YT.PlayerState.PLAYING) {
+            if (interval === null && !earnedCoin && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
+            lastTime = player.getCurrentTime();
+
+            interval = setInterval(function() {
+              var currentTime = player.getCurrentTime();
+
+              // Check if the user skipped
+              if (Math.abs(currentTime - lastTime) > 2) {
+                watchTime = 0; // Reset watch time if skipping detected
+              } else {
+                watchTime += 1; // Increase watch time by 1 second
+              }
+
+              lastTime = currentTime;
+
+              // Check if user watched 5 minutes or reached the end
+              if (!earnedCoin && watchTime >= 240) {
+
+                if(selectedSubject !== "Entertainment"){
+                    addCoins();
+                    earnedCoin = true;
+                    clearInterval(interval);
+                    interval = null;
+                }else{
+                    var coinCountElement = document.getElementById("coinCount");
+                    if (watchTime >= 900 ) {
+                        var coins = subtructCoins();
+                        if(coins > 0 )
+                        {
+                            localStorage.setItem("coins",coins);
+                            coinCountElement.textContent = coins;
+                            watchTime = 0;
+                             // Call the function to play the video
+                        }else{
+                            console.log("add coins");
+                            player.pauseVideo();
+                            earnedCoin = true;
+                            clearInterval(interval);
+                            interval = null;
+                            showNotEnoughCoinsModal();
+                        }
+                    }
+
+                }
+
+
+
+
+
+              }
+              console.log(watchTime);
+            }, 1000);}
+          }   else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+            // Pause counting
+            console.log(" Pause counting");
+            clearInterval(interval);
+            interval = null;
+        }
+
+
+
 }
 
 
@@ -107,6 +199,12 @@ document.addEventListener("DOMContentLoaded", function () {
         var signInButton=document.getElementById('signInButton');
         var signInForm=document.getElementById('signIn');
         var signUpForm=document.getElementById('signup');
+        var coinCountElement = document.getElementById("coinCount");
+        var coinImgElement = document.getElementById("coinIcon");
+        var coinContainer = document.getElementById("coinContainer");
+
+
+
         signUpButton.addEventListener('click',function(){
             signInForm.style.display="none";
             signUpForm.style.display="block";
@@ -129,55 +227,132 @@ document.addEventListener("DOMContentLoaded", function () {
             // Change the user icon to the desired image
             document.getElementById('userIcon').src = '/images/yabran.JPG';
         }
-        // Populate Right Sidebar with Videos
-        if (videoList.length) {
-            var rightSidebar = document.querySelector(".right-sidebar");
-            rightSidebar.innerHTML = "";
+        if (grade != "KG"){
+            coinContainer.style.display="block";
+        }
+        populateRightSidebar(videoList);
 
-            videoList.forEach(function (video) {
-                var videoElement = document.createElement("div");
-                videoElement.classList.add("side-video-list");
 
-                var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
-                                video.thumbnails.medium : (video.thumbnails && video.thumbnails.default) ?
-                                video.thumbnails.default : "";
+        /*========================= user side bar=======================*/
 
-                videoElement.innerHTML =
-                    '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
-                    '<img src="' + thumbnail + '" alt="Thumbnail">' +
-                    '</div>' +
-                    '<div class="vid-info">' +
-                    '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
-                    '<p>' + video.channelTitle + '</p>' +
-                    '</div>';
+   // Add click event listeners for menu items
+   document.getElementById("myProfile").addEventListener('click', function() {
+    console.log("Profile clicked");
+});
 
-                rightSidebar.appendChild(videoElement);
+document.getElementById("settings").addEventListener('click', function() {
+    console.log("Settings clicked");
+});
+document.getElementById("contactUs").addEventListener('click', function() {
+    window.open('/pages/contact-us.html', '_blank');
+    console.log("Contact Us clicked");
+});
+
+document.getElementById("logout").addEventListener('click', function() {
+    var userId = localStorage.getItem('loggedInUserId');
+var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+
+console.log("UserId:", userId);
+console.log("LastWatchedPath:", lastWatchedPath);
+
+if (userId ) {
+updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
+    .then(function() {
+        updateFavoritesOnSignOut();
+        // Clear localStorage and sign out after Firestore update completes
+        localStorage.clear();
+        auth.signOut()
+            .then(function() {
+                console.log('User signed out successfully');
+                window.location.href = '/index.html';
+            })
+            .catch(function(error) {
+                console.error('Error signing out:', error);
             });
+    })
+    .catch(function(error) {
+        console.error("Error during Firestore update:", error);
+    });
+} else {
+console.error("UserId or LastWatchedPath is missing in localStorage.");
+}
+});
 
-            // Add click event listeners to video elements
-            var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
-           // Convert NodeList to an array manually and add event listeners
-                    var i;
-                    for (i = 0; i < videoElements.length; i++) {
-                        (function (element) {
-                            element.addEventListener("click", function () {
-                                var videoId = element.getAttribute("data-video-id");
-                                playVideo(videoId);
-                                localStorage.setItem('videoId', videoId);
-                                checkFavourited(videoId);
-                                 // Call the function to play the video
-                            });
-                        })(videoElements[i]); // IIFE to correctly capture element reference
-                    }
-                        } else {
-                            console.log("No videos found in localStorage.");
-                        }
     }
 else{
     console.log("No internet!!");
 }
                 });
 
+                function populateRightSidebar(videoList) {
+                    if (!videoList.length) {
+                        console.log("No videos found in localStorage.");
+                        return;
+                    }
+
+                    var rightSidebar = document.querySelector(".right-sidebar");
+                    rightSidebar.innerHTML = "";
+
+                    videoList.forEach(function (video) {
+                        var videoElement = document.createElement("div");
+                        videoElement.classList.add("side-video-list");
+
+                        var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
+                            video.thumbnails.medium :
+                            (video.thumbnails && video.thumbnails.default) ?
+                                video.thumbnails.default : "";
+
+                        videoElement.innerHTML =
+                            '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
+                            '<img src="' + thumbnail + '" alt="Thumbnail">' +
+                            '</div>' +
+                            '<div class="vid-info">' +
+                            '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
+                            '<p>' + video.channelTitle + '</p>' +
+                            '</div>';
+
+                        rightSidebar.appendChild(videoElement);
+                    });
+
+                    addVideoClickListeners();
+                }
+
+                function addVideoClickListeners() {
+                    var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
+
+                    for (var i = 0; i < videoElements.length; i++) {
+                        (function (element) {
+                            element.addEventListener("click", function () {
+                                console.log("inside addEventListener");
+                                watchTime = 0;
+                                var coinCountElement = document.getElementById("coinCount");
+                                var videoId = element.getAttribute("data-video-id");
+                                var coins = localStorage.getItem("coins");
+                                var selectedSubject = getSelectedPart(1);
+
+                                if (selectedSubject === 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
+                                    coins = subtructCoins();
+                                    if (coins > 0) {
+                                        playVideo(videoId);
+                                        localStorage.setItem('videoId', videoId);
+                                        checkFavourited(videoId);
+                                        localStorage.setItem("coins", coins);
+                                        coinCountElement.textContent = coins;
+                                    } else {
+                                        showNotEnoughCoinsModal();
+                                        console.log("add coins");
+                                    }
+                                } else {
+                                    playVideo(videoId);
+                                    localStorage.setItem('videoId', videoId);
+                                    checkFavourited(videoId);
+                                    earnedCoin = false;
+                                    coinCountElement.textContent = coins;
+                                }
+                            });
+                        })(videoElements[i]);
+                    }
+                }
 
 // Function to play the video in the YouTube player
 function playVideo(videoId) {
@@ -196,6 +371,7 @@ var questionText = document.getElementById('questionText');
 var answerContainer = document.getElementById('answerContainer');
 var countdownDisplay = document.getElementById('countdown');
 var favoriteBtn = document.querySelector(".favorite-btn");
+
 var quizInterval;
 var countdownInterval;
 var signOutButton = document.getElementById('signOut');
@@ -204,9 +380,11 @@ var auth = firebase.auth();
 function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
     var db = firebase.firestore();
     var userRef = db.collection("users").doc(userId);
+    var coins = localStorage.getItem("coins");
 
     return userRef.update({
-        lastWatchedPath: lastWatchedPath
+        lastWatchedPath: lastWatchedPath,
+        coins:coins
     })
     .then(function() {
         console.log("lastWatchedPath updated successfully!");
@@ -252,30 +430,32 @@ iframeOverlay.addEventListener('click', function() {
 
         if (playerState === YT.PlayerState.PLAYING) {
             player.pauseVideo(); // Pause the video if it's playing
-            //favoriteBtn.style.display = 'block';
-            console.log("Video paused");
+
         } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.ENDED) {
             player.playVideo(); // Play the video if it's paused or ended
-            //favoriteBtn.style.display = 'none';
-            console.log("Video playing");
+
         }
     } else {
         console.error("YouTube player is not initialized or does not support the required methods.");
     }
 });
-var userIcon = document.getElementById('userIcon');
 
-var dropdownMenu = document.getElementById('dropdownMenu');
+// Close sidebar when clicking anywhere outside
+document.addEventListener('click', function(event) {
+    var userSidebar = document.querySelector(".userSidebar");
+    var sidebar = document.querySelector(".sidebar");
+    var userIcon = document.getElementById("userIcon");
 
-userIcon.addEventListener('click', function () {
-dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-});
 
-// Close the dropdown when clicking outside
-document.addEventListener('click', function (event) {
-if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
-    dropdownMenu.style.display = 'none';
-}
+    // Close the sidebar if clicked outside the user icon or the sidebar
+    if (!userSidebar.contains(event.target) && event.target !== userIcon) {
+        userSidebar.classList.remove("visible"); // Removes 'visible' class to hide the sidebar
+
+    }else{
+        userSidebar.classList.toggle("visible");
+        sidebar.classList.remove("visible");
+    }
+
 });
 function displayQuestion() {
     resetQuiz(); // Reset button states
@@ -357,9 +537,7 @@ function hideModal() {
     if (player && player.playVideo) {
         player.playVideo(); // Resume the video
     }
-    // if (player.contentWindow) {
-    //     player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    // }
+
 }
 
 function resetQuiz() {
@@ -540,6 +718,10 @@ var slidingText = document.querySelector(".sliding-text");
 var iframeOverlay = document.getElementById("iframeOverlay");
 var youtubeLogoOverlay = document.querySelector(".youtube-logo-overlay");
 var body = document.body;
+var coinImgElement = document.getElementById("coinIcon");
+var coinCountElement = document.getElementById("coinCount");
+var deleteBtn = document.querySelector(".delete-btn");
+var syncBtn = document.querySelector(".sync-btn");
 
 // Function to toggle full screen mode
 function toggleFullScreen() {
@@ -563,10 +745,22 @@ else if (youtubeLogoOverlay.attachEvent) {
 
 var slidingText = document.querySelector(".sliding-text");
 if(loggedInUserId){
-    joinUs.style.display = "none";
-    slidingText.style.display = "none";
+    var coins = localStorage.getItem('coins');
+    coinCountElement.textContent = coins;
+    if(loggedInUserId == "vzTIlWdmgTZTF9zpEygFlcl8yFq1"){
+        deleteBtn.style.display = "block";
+        syncBtn.style.display = "block";
+
+        deleteBtn.addEventListener("click", deleteVideo);
+        syncBtn.addEventListener("click", removeVideoFromFirestore);
+    }
+
 }
 else{
+    joinUs.style.display = "block";
+    slidingText.style.display = "block";
+    coinCountElement.style.display = "none";
+    coinImgElement.style.display = "none";
     favoriteBtn.style.display = "none";
     userIcon.style.display = "none";
     searchBox.style.display = "none";
@@ -579,8 +773,132 @@ else{
 
 });
 
+function removeVideoFromFirestore() {
+    var contentPath = getSelectedPart(0) + "_" + getSelectedPart(1) + "_" + getSelectedPart(2);
+    var subcontent = getSelectedPart(3);
+    var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+
+    var contentRef = db.collection("contents").doc(contentPath);
+
+    contentRef.get().then(function (doc) {
+        if (doc.exists) {
+            var data = doc.data();
+            var subcontents = data.subcontents || [];
+
+            // Find the subcontent
+            for (var i = 0; i < subcontents.length; i++) {
+                if (subcontents[i].subcontent === subcontent) {
+                    var videos = subcontents[i].videos || [];
+
+                    // Update the subcontent's videos array
+                    subcontents[i].videos = videoList;
+
+                    // Update Firestore
+                    contentRef.update({ subcontents: subcontents })
+                        .then(function () {
+                            console.log("Video removed successfully!");
+                        })
+                        .catch(function (error) {
+                            console.error("Error updating Firestore:", error);
+                        });
+
+                    return; // Exit loop once subcontent is found and updated
+                }
+            }
+            console.log("Subcontent not found.");
+        } else {
+            console.log("Content document does not exist.");
+        }
+    }).catch(function (error) {
+        console.error("Error fetching document:", error);
+    });
+}
+
+function removeVideoById(videos, videoId) {
+    var updatedVideos = [];
+    for (var i = 0; i < videos.length; i++) {
+        if (videos[i].videoId !== videoId) {
+            updatedVideos.push(videos[i]);
+        }
+    }
+    return updatedVideos;
+}
 
 
+// Function to show the delete confirmation modal
+function showDeleteConfirmationModal(onConfirm) {
+    var modal = document.getElementById("quizModal");
+    var overlay = document.getElementById("overlay");
+
+    // Set the question text to the delete confirmation message
+    var questionText = document.getElementById("questionText");
+    var quizContent = document.querySelector(".quiz-content");
+    questionText.innerHTML = "Are you sure you want to delete this video?";
+
+    // Clear any previous content from the answer container
+    var answerContainer = document.getElementById("answerContainer");
+    answerContainer.innerHTML = "";
+
+    // Create the "Yes" button
+    var confirmButton = document.createElement("button");
+    confirmButton.classList.add("btn");
+    confirmButton.textContent = "Yes, Delete";
+    confirmButton.style.background = "red";
+    confirmButton.style.color = "white";
+
+    confirmButton.addEventListener("click", function () {
+        modal.classList.remove("active");
+        overlay.classList.remove("active");
+        onConfirm(); // Call the function passed to confirm deletion
+    });
+
+    // Create the "No" button
+    var cancelButton = document.createElement("button");
+    cancelButton.classList.add("btn");
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.background = "gray";
+    cancelButton.style.color = "white";
+
+    cancelButton.addEventListener("click", function () {
+        modal.classList.remove("active");
+        overlay.classList.remove("active");
+    });
+
+    // Append buttons to the answer container
+    answerContainer.appendChild(confirmButton);
+    answerContainer.appendChild(cancelButton);
+
+    // Show the modal and overlay
+    modal.classList.add("active");
+    overlay.classList.add("active");
+}
+// Example usage:
+function deleteVideo() {
+    showDeleteConfirmationModal(function () {
+         //get the current videoId
+    var videoId = localStorage.getItem("videoId");
+    // get the current videoList
+    var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+    //remove the video and update the rest and save it to local storage
+    localStorage.setItem("videoList", JSON.stringify(removeVideoById(videoList,videoId)));
+    var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+    populateRightSidebar(videoList) ;
+    console.log(videoList.length);
+
+    var nextVideoId = getNextVideoId();
+    if (nextVideoId) {
+
+        localStorage.setItem('videoId', nextVideoId.videoId);
+        checkFavourited(nextVideoId.videoId);
+        player.loadVideoById(nextVideoId);
+
+    } else {
+        console.warn("No next video found.");
+    }
+        console.log("Video deleted!");
+        // Call your actual delete function here
+    });
+}
 
 function adjustIframeOrientation() {
     var iframeContainer = document.getElementById("youtube-player");
@@ -613,3 +931,78 @@ window.addEventListener("resize", adjustIframeOrientation);
 window.addEventListener("load", () => {
     setTimeout(adjustIframeOrientation, 500); // Wait a bit for iframe to load
 });
+
+
+function addCoins(){
+    var coinCountElement = document.getElementById("coinCount");
+    var coins = localStorage.getItem("coins");
+    coins = coins ? parseInt(coins, 10) : 0;
+    coins += 3;
+    localStorage.setItem("coins", coins);
+    coinCountElement.textContent = coins;
+}
+function subtructCoins(){
+    var coins = localStorage.getItem("coins");
+    coins = coins ? parseInt(coins, 10) : 0;
+    coins -= 5;
+    return coins;
+}
+function getSelectedPart(index) {
+    return lastWatchedPath.split("_")[index] || null;
+}
+
+// Function to show the modal with the message about not enough coins
+function showNotEnoughCoinsModal() {
+    var modal = document.getElementById("quizModal");
+    var overlay = document.getElementById("overlay");
+
+     // Display question image if available
+
+
+
+    // Set the question text to be the message
+    var questionText = document.getElementById("questionText");
+    var quizContent = document.querySelector(".quiz-content");
+    questionText.innerHTML = "You Need at least 5 Coins! "; // Custom message
+    var questionImage = document.createElement('img');
+    questionImage.src = "/images/coin.png";
+    questionImage.alt = "Question Image";
+    questionImage.className = "question-image";
+
+    // Set width and height
+    questionImage.style.width = "100px"; // Adjust the width as needed
+    questionImage.style.height = "100px"; // Adjust the height as needed
+
+    quizContent.appendChild(questionImage);
+    // Clear the answerContainer (no answers for this case)
+    var answerContainer = document.getElementById("answerContainer");
+    answerContainer.innerHTML = ""; // No answers are needed
+
+    // Create a "Go to Home" button
+    var goToIndexButton = document.createElement("button");
+    goToIndexButton.classList.add("btn");
+    goToIndexButton.textContent = "Watch Other Subject!"; // Button text
+
+    // Add event listener to the button
+    goToIndexButton.addEventListener("click", function() {
+        window.location.href = "/index.html"; // Redirect to index.html when clicked
+
+    });
+
+    // Append the button to the answer container
+    answerContainer.appendChild(goToIndexButton);
+
+    // Show the modal and overlay
+    modal.classList.add("active");
+    overlay.classList.add("active");
+}
+
+// Function to hide the modal
+function hideNotEnoughCoinsModal() {
+    var modal = document.getElementById("quizModal");
+    var overlay = document.getElementById("overlay");
+
+    // Remove the active class to hide the modal and overlay
+    modal.classList.remove("active");
+    overlay.classList.remove("active");
+}

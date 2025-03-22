@@ -23,10 +23,10 @@
 
         </div>
         <div class="nav-middle flex-div">
-          <div class="sliding-text">
+          <div class="sliding-text" style="display:none;">
             ከኬጂ - 12ኛ ክፍል የተመረጡ ቪዲዮዎች! አሁኑኑ ይቀላቀሉ! ☆ Carefully Selected Videos From KG - Grade 12. Join Us Now!
           </div>
-            <div class="search-box flex-div">
+            <div class="search-box flex-div" >
                 <input type="text" id="searchBar" placeholder="Search" />
                 <!-- Search Results Dropdown -->
                 <div id="searchResults" class="results-dropdown">
@@ -37,7 +37,13 @@
 
 
         <div class="nav-right flex-div">
-            <button  class="btn"  id="joinUs">Join Us!</button>
+
+            <button  class="btn"  id="joinUs" style="display:none;">Join Us!</button>
+            <!-- Coin Icon with Counter -->
+            <div class="coin-container" style="display: none;" id="coinContainer">
+              <img src="images/coin.png" id="coinIcon" class="coin-icon" alt="Coin">
+              <span id="coinCount">0</span>
+            </div>
             <span id="nickName"></span>
             <img src="images/user-icon.png" id="userIcon">
             <div class="dropdown-menu" id="dropdownMenu">
@@ -57,7 +63,7 @@
                   <div id="signUpMessage" class="messageDiv" style="display:none;"></div>
                   <div class="input-group">
                      <i class="fas fa-user"></i>
-                     <input type="text"  id="nickNameText" placeholder="User Name" required>
+                     <input type="text"  id="userName" placeholder="User Name" required>
 
 
                   </div>
@@ -129,13 +135,23 @@
         </div>
 
     </div>
+    <div class="userSidebar" id="userSidebar">
+      <p>User Menu</p>
+      <ul>
+        <li class="userSidebar-item" id="myProfile" >Profile</li>
+        <li class="userSidebar-item" id="settings" >Settings</li>
+        <li class="userSidebar-item" id="contactUs" >Contact Us</li>
+        <li class="userSidebar-item" id="logout">Logout</li>
+
+      </ul>
+  </div>
 
     <!-- Main content -->
     <div class="container">
         <div class="list-container">
             <!-- Video list will be dynamically populated here -->
         </div>
-        <div id="welcomeMessage">Welcome To Keremela Please Select a Subject To Start</div>
+
     </div>
 
     <script src="/scripts/firebase-auth.js"></script>

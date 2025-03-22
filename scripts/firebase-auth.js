@@ -22,9 +22,9 @@ function showMessage(message, divId) {
     messageDiv.style.display = "block";
     messageDiv.innerHTML = message;
     messageDiv.style.opacity = 1;
-    setTimeout(function() {
-        messageDiv.style.opacity = 0;
-    }, 3000);
+    // setTimeout(function() {
+    //     messageDiv.style.opacity = 0;
+    // }, 3000);
 }
 
 // Function to populate the dropdown
@@ -86,17 +86,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     populateDropdown();
 });
-
 // Sign Up functionality
 var signUp = document.getElementById('submitSignUp');
 signUp.addEventListener('click', function(event) {
     event.preventDefault();
     var email = document.getElementById('rEmail').value;
     var password = document.getElementById('rPassword').value;
-    var nickName = document.getElementById('nickNameText').value;
-    var grade =document.getElementById("gradeSelect").value;
-
-
+    var nickName = document.getElementById('userName').value;
+    var grade = document.getElementById("gradeSelect").value;
 
     var auth = firebase.auth();
     var db = firebase.firestore();
@@ -104,33 +101,38 @@ signUp.addEventListener('click', function(event) {
     auth.createUserWithEmailAndPassword(email, password)
         .then(function(userCredential) {
             var user = userCredential.user;
-            var userData = {
-                email: email,
-                nickName: nickName,
-                grade:grade,
-                lastWatchedPath:"",
-                selectedQuizList:[],
-                favorites:[]
 
-            };
+            // Send email verification
+            user.sendEmailVerification().then(function() {
+                showMessage('Verification email sent! Please check your inbox.', 'signUpMessage');
 
-            showMessage('Account Created Successfully', 'signUpMessage');
-            var docRef = db.collection("users").doc(user.uid);
-            docRef.set(userData)
-                .then(function() {
-                    localStorage.setItem('loggedInUserId', user.uid);
-                    localStorage.setItem('age', userData.age); // Store age in localStorage
-                    localStorage.setItem('nickName', userData.nickName);
-                    localStorage.setItem('grade', userData.grade);
-                    localStorage.setItem("isFirstLogin", "yes");
-                    localStorage.setItem('selectedQuizList', []);
-                    localStorage.setItem('lastWatchedPath', "");
-                    window.location.href = '/index.html';
+                // Store user data in Firestore
+                var userData = {
+                    email: email,
+                    nickName: nickName,
+                    grade: grade,
+                    lastWatchedPath: "",
+                    coins: 30,
+                    selectedQuizList: [],
+                    favorites: []
+                };
 
-                })
-                .catch(function(error) {
-                    console.error("Error writing document", error);
-                });
+                var docRef = db.collection("users").doc(user.uid);
+                docRef.set(userData)
+                    .then(function() {
+                        showMessage('Account created! Verify your email before logging in.', 'signUpMessage');
+                        auth.signOut(); // Prevent login until email is verified
+                        //window.location.href = '/verification-sent.html'; // Redirect to verification page
+                    })
+                    .catch(function(error) {
+                        console.error("Error writing document", error);
+                    });
+
+            }).catch(function(error) {
+                console.error("Error sending verification email:", error);
+                showMessage('Error sending verification email. Try again later.', 'signUpMessage');
+            });
+
         })
         .catch(function(error) {
             var errorCode = error.code;
@@ -142,7 +144,6 @@ signUp.addEventListener('click', function(event) {
         });
 });
 
-// Sign In functionality
 var signIn = document.getElementById('submitSignIn');
 signIn.addEventListener('click', function(event) {
     event.preventDefault();
@@ -153,37 +154,56 @@ signIn.addEventListener('click', function(event) {
     auth.signInWithEmailAndPassword(email, password)
         .then(function(userCredential) {
             var user = userCredential.user;
-            var userId = user.uid;
 
-            // Fetch additional user data from Firestore
-            var db = firebase.firestore();
-            var userRef = db.collection("users").doc(userId);
+            if (user.emailVerified) {
+                var userId = user.uid;
+                var db = firebase.firestore();
+                var userRef = db.collection("users").doc(userId);
 
-            userRef.get().then(function(doc) {
-                if (doc.exists) {
+                userRef.get().then(function(doc) {
+                    if (doc.exists) {
+                        var userData = doc.data();
+                        localStorage.setItem('loggedInUserId', userId);
+                        localStorage.setItem('age', userData.age);
+                        localStorage.setItem('nickName', userData.nickName);
+                        localStorage.setItem('grade', userData.grade);
+                        localStorage.setItem('coins', userData.coins);
+                        localStorage.setItem('selectedQuizList', JSON.stringify(userData.selectedQuizList));
+                        localStorage.setItem('favorites', JSON.stringify(userData.favorites));
+                        localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
+                        localStorage.setItem("isFirstLogin", "yes");
 
-                    var userData = doc.data();
-                    localStorage.setItem('loggedInUserId', userId);
-                    localStorage.setItem('age', userData.age); // Store age in localStorage
-                    localStorage.setItem('nickName', userData.nickName); // Store nickname
-                    showMessage('Login is successful', 'signInMessage');
-                    localStorage.setItem('grade', userData.grade);
+                        showMessage('Login successful!', 'signInMessage');
+                        window.location.href = '/index.html';
 
-                    // Assuming userData.selectedQuizList is an array
-                    localStorage.setItem('selectedQuizList', JSON.stringify(userData.selectedQuizList));
-                    localStorage.setItem('favorites', JSON.stringify(userData.favorites));
-                    localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
-                    localStorage.setItem("isFirstLogin", "yes");
-
-                    window.location.href = '/index.html';
-                } else {
-                    console.error("No such user document!");
+                    } else {
+                        console.error("No such user document!");
+                        showMessage('Error retrieving user data', 'signInMessage');
+                    }
+                }).catch(function(error) {
+                    console.error("Error fetching user data:", error);
                     showMessage('Error retrieving user data', 'signInMessage');
-                }
-            }).catch(function(error) {
-                console.error("Error fetching user data:", error);
-                showMessage('Error retrieving user data', 'signInMessage');
-            });
+                });
+
+            } else {
+                // Show message with a clickable link to resend verification email
+                var resendLink = `<br><a href="#" id="resendVerification">Resend verification email</a>`;
+                showMessage(`Please verify your email before logging in.${resendLink}`, 'signInMessage');
+
+                auth.signOut(); // Prevent unverified users from staying logged in
+
+                // Add event listener to resend verification email
+                document.getElementById('resendVerification').addEventListener('click', function() {
+                    user.sendEmailVerification()
+                        .then(() => {
+                            showMessage('Verification email sent. Check your inbox.', 'signInMessage');
+                        })
+                        .catch(error => {
+                            console.error("Error sending verification email:", error);
+                            showMessage('Failed to send verification email. Try again later.', 'signInMessage');
+                        });
+                });
+            }
         })
         .catch(function(error) {
             var errorCode = error.code;

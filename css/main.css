@@ -28,7 +28,9 @@ img{
 
 }
 nav{
-    padding: 10px 2%;
+    padding-left: 5px ;
+    padding-right: 5px ;
+    padding-top: 5px ;
     justify-content: space-between;
     box-shadow: 0 0 10px rgba(200, 0, 0, 0.8);
     background: #030000;
@@ -150,6 +152,49 @@ nav{
 
 }
 
+.userSidebar {
+    width: 250px;
+    height: 100vh; /* Full viewport height */
+    background: linear-gradient(to bottom, rgba(101, 1, 132, 0.89), rgba(44, 14, 5, 1)); /* Green school theme */
+    position: fixed;
+    right: -250px;
+
+
+    transition: right 0.3s;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+
+
+
+    padding: 20px;
+    padding-bottom: 60px;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.userSidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.userSidebar ul li {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.userSidebar ul li:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.userSidebar.visible {
+    right: 0;
+  }
+
+.userSidebar.open {
+    right: 0;
+}
 .favorite-videos-btn {
     display: block;
     width: 100%;
@@ -294,7 +339,7 @@ nav{
 
 .container {
     background: #060101;
-    padding-left: 2%;
+    padding: 5px;
     min-height: 100vh;
     padding-top: 10px;
     padding-bottom: 20px;
@@ -384,12 +429,34 @@ nav{
 
 .favorite-btn {
 
-    font-size: 24px;
+    font-size:36px ;
+    z-index: 3;
+
     cursor: pointer;
     background: none;
     border: none;
     outline: none;
     color: #ddd;
+}
+.favorite-btn-container{
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    top: 0px;
+    right: 5px;
+    z-index: 3;
+}
+.delete-btn {
+    font-size: 36px; /* Adjust the size */
+    cursor: pointer;
+    z-index: 3;
+}
+.sync-btn{
+    font-size: 36px; /* Adjust the size */
+    cursor: pointer;
+
 }
 .iframe-controls-overlay {
     position: absolute;
@@ -411,13 +478,7 @@ nav{
 
 
 }
-.favorite-btn {
-    position: absolute;
-    top: 0px;
-    right: 5px;
-    font-size:36px ;
-    z-index: 3;
-}
+
 .side-video-list{
 
     margin-bottom: 8px;
@@ -461,9 +522,7 @@ nav{
     padding-left: 1%;
     padding-right: 1%
     }
-    .nav-right img{
-        display: none;
-    }
+
     .nav-middle{
         display: none;
     }
@@ -629,4 +688,74 @@ nav{
         width: 100%;
         height: 90vh; /* Uses most of the screen height */
     }
+}
+
+
+/*------------------ coin ----------------------*/
+.coin-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+}
+
+.coin-icon {
+
+    height: 25px;
+    cursor: pointer;
+}
+
+#coinCount {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: red;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+.coin-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 1001;
+    width: 300px;
+}
+
+.coin-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.coin-modal.active,
+.coin-overlay.active {
+    display: block;
+}
+
+button {
+    background: #ff3b3b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #d63030;
 }
