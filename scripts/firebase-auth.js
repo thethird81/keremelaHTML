@@ -172,6 +172,9 @@ signIn.addEventListener('click', function(event) {
                         localStorage.setItem('favorites', JSON.stringify(userData.favorites));
                         localStorage.setItem('lastWatchedPath', userData.lastWatchedPath);
                         localStorage.setItem("isFirstLogin", "yes");
+                        localStorage.setItem("questions", JSON.stringify([]));
+
+
 
                         showMessage('Login successful!', 'signInMessage');
                         window.location.href = '/index.html';

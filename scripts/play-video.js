@@ -284,75 +284,76 @@ else{
 }
                 });
 
-                function populateRightSidebar(videoList) {
-                    if (!videoList.length) {
-                        console.log("No videos found in localStorage.");
-                        return;
+
+function populateRightSidebar(videoList) {
+    if (!videoList.length) {
+        console.log("No videos found in localStorage.");
+        return;
+    }
+
+    var rightSidebar = document.querySelector(".right-sidebar");
+    rightSidebar.innerHTML = "";
+
+    videoList.forEach(function (video) {
+        var videoElement = document.createElement("div");
+        videoElement.classList.add("side-video-list");
+
+        var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
+            video.thumbnails.medium :
+            (video.thumbnails && video.thumbnails.default) ?
+                video.thumbnails.default : "";
+
+        videoElement.innerHTML =
+            '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
+            '<img src="' + thumbnail + '" alt="Thumbnail">' +
+            '</div>' +
+            '<div class="vid-info">' +
+            '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
+            '<p>' + video.channelTitle + '</p>' +
+            '</div>';
+
+        rightSidebar.appendChild(videoElement);
+    });
+
+    addVideoClickListeners();
+}
+
+function addVideoClickListeners() {
+    var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
+
+    for (var i = 0; i < videoElements.length; i++) {
+        (function (element) {
+            element.addEventListener("click", function () {
+                console.log("inside addEventListener");
+                watchTime = 0;
+                var coinCountElement = document.getElementById("coinCount");
+                var videoId = element.getAttribute("data-video-id");
+                var coins = localStorage.getItem("coins");
+                var selectedSubject = getSelectedPart(1);
+
+                if (selectedSubject === 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
+                    coins = subtructCoins();
+                    if (coins > 0) {
+                        playVideo(videoId);
+                        localStorage.setItem('videoId', videoId);
+                        checkFavourited(videoId);
+                        localStorage.setItem("coins", coins);
+                        coinCountElement.textContent = coins;
+                    } else {
+                        showNotEnoughCoinsModal();
+                        console.log("add coins");
                     }
-
-                    var rightSidebar = document.querySelector(".right-sidebar");
-                    rightSidebar.innerHTML = "";
-
-                    videoList.forEach(function (video) {
-                        var videoElement = document.createElement("div");
-                        videoElement.classList.add("side-video-list");
-
-                        var thumbnail = (video.thumbnails && video.thumbnails.medium) ?
-                            video.thumbnails.medium :
-                            (video.thumbnails && video.thumbnails.default) ?
-                                video.thumbnails.default : "";
-
-                        videoElement.innerHTML =
-                            '<div class="small-thumbnail" data-video-id="' + video.videoId + '">' +
-                            '<img src="' + thumbnail + '" alt="Thumbnail">' +
-                            '</div>' +
-                            '<div class="vid-info">' +
-                            '<div data-video-id="' + video.videoId + '">' + video.title + '</div>' +
-                            '<p>' + video.channelTitle + '</p>' +
-                            '</div>';
-
-                        rightSidebar.appendChild(videoElement);
-                    });
-
-                    addVideoClickListeners();
+                } else {
+                    playVideo(videoId);
+                    localStorage.setItem('videoId', videoId);
+                    checkFavourited(videoId);
+                    earnedCoin = false;
+                    coinCountElement.textContent = coins;
                 }
-
-                function addVideoClickListeners() {
-                    var videoElements = document.querySelectorAll(".side-video-list [data-video-id]");
-
-                    for (var i = 0; i < videoElements.length; i++) {
-                        (function (element) {
-                            element.addEventListener("click", function () {
-                                console.log("inside addEventListener");
-                                watchTime = 0;
-                                var coinCountElement = document.getElementById("coinCount");
-                                var videoId = element.getAttribute("data-video-id");
-                                var coins = localStorage.getItem("coins");
-                                var selectedSubject = getSelectedPart(1);
-
-                                if (selectedSubject === 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
-                                    coins = subtructCoins();
-                                    if (coins > 0) {
-                                        playVideo(videoId);
-                                        localStorage.setItem('videoId', videoId);
-                                        checkFavourited(videoId);
-                                        localStorage.setItem("coins", coins);
-                                        coinCountElement.textContent = coins;
-                                    } else {
-                                        showNotEnoughCoinsModal();
-                                        console.log("add coins");
-                                    }
-                                } else {
-                                    playVideo(videoId);
-                                    localStorage.setItem('videoId', videoId);
-                                    checkFavourited(videoId);
-                                    earnedCoin = false;
-                                    coinCountElement.textContent = coins;
-                                }
-                            });
-                        })(videoElements[i]);
-                    }
-                }
+            });
+        })(videoElements[i]);
+    }
+}
 
 // Function to play the video in the YouTube player
 function playVideo(videoId) {

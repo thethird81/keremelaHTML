@@ -17,17 +17,11 @@ var signOutButton = document.getElementById('signOut');
 
 var db = firebase.firestore();
  var auth = firebase.auth();
-   // Listen for authentication state changes
-// auth.onAuthStateChanged(function(user) {
-
-//     if (loggedInUserId) {
-//         console.log(user);
-//     } else {
-//         window.location.href = '/index.html';
-//         console.log("User Id not found in local storage");
-//     }
-// });
-
+ if (!window.indexedDB) {
+    console.log("IndexedDB is NOT supported in this browser.");
+} else {
+    console.log("IndexedDB is supported!");
+}
 document.addEventListener('DOMContentLoaded', function () {
     var signUpButton=document.getElementById('signUpButton');
     var signInButton=document.getElementById('signInButton');
@@ -122,48 +116,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
 
-    if (storedSelectedQuizList !== null)
-        {  var selectedQuizList = JSON.parse(storedSelectedQuizList);
-
-
-            if(selectedQuizList.length > 0)
-            {
-                //fetchQuestionsForSelectedPaths(selectedQuizList);
-                fetchAndMergeQuizzes();
-            }
-            else{
-                // fetch question based on users grade
-                console.log("fetch question based on users grade");
-                var questionRef = db.collectionGroup("questions").where("grade", "==", grade).limit(50);
-                questionRef.get().then((querySnapshot) => {
-                 var questions = querySnapshot.docs.map(function (doc) {
-                     return doc.data();
-
-                 });
-
-                 localStorage.setItem("questions", JSON.stringify(questions));
-
-             }).catch((error) => {
-                 console.log("Error getting documents: ", error);
-             });
-                 }
-        }
-        else{
-       // fetch question based on users grade
-       console.log("fetch question based on users grade");
-       var questionRef = db.collectionGroup("questions").where("grade", "==", grade).limit(50);
-       questionRef.get().then((querySnapshot) => {
-        var questions = querySnapshot.docs.map(function (doc) {
-            return doc.data();
-
-        });
-
-        localStorage.setItem("questions", JSON.stringify(questions));
-
-    }).catch((error) => {
-        console.log("Error getting documents: ", error);
-    });
-        }
+        const questions = JSON.parse(localStorage.getItem("questions"));
+        if(questions.length == 0)
+        fetchAndMergeQuizzes();
         updateVideoList(videoList);
 
     }
@@ -237,22 +192,12 @@ document.addEventListener('click', function(event) {
 
 });
 
-
 function fetchAndMergeQuizzes() {
-    var userId = localStorage.getItem("loggedInUserId");
-    if (!userId) {
-        console.error("User not logged in.");
-        return;
-    }
+    console.log("Fetching and merging quizzes...");
 
-    var userRef = db.collection("users").doc(userId);
-    userRef.get().then(function (doc) {
-        if (!doc.exists) {
-            console.error("User document not found.");
-            return;
-        }
+        var selectedQuizList = JSON.parse(localStorage.getItem("selectedQuizList"));
+        console.log("Selected Quiz List:", selectedQuizList);
 
-        var selectedQuizList = doc.data().selectedQuizList || [];
         if (selectedQuizList.length === 0) {
             console.log("No quizzes selected.");
             localStorage.setItem("questions", JSON.stringify([]));
@@ -262,29 +207,70 @@ function fetchAndMergeQuizzes() {
         var mergedQuestions = [];
         var fetchPromises = [];
 
-        selectedQuizList.forEach(function (subcontentId) {
-            var quizRef = db.collection("subcontents").doc(subcontentId);
+        selectedQuizList.forEach(function (path, index) {
+            console.log("Processing path:", path);
+
+            var pathParts = path.split("_");
+            if (pathParts.length < 4) {
+                console.error("Invalid path format:", path);
+                return;
+            }
+
+            var contentId = pathParts[0] + "_" + pathParts[1] + "_" + pathParts[2];
+            var subcontentName = pathParts[3]; // Extract subcontent name from the path
+
+            console.log("Content ID:", contentId, " | Subcontent Name:", subcontentName);
+
+            var quizRef = db.collection("contents").doc(contentId);
             var promise = quizRef.get().then(function (subDoc) {
-                if (subDoc.exists && subDoc.data().quiz) {
-                    mergedQuestions = mergedQuestions.concat(subDoc.data().quiz);
+                if (!subDoc.exists) {
+                    console.warn("Document does not exist for content ID:", contentId);
+                    return;
+                }
+
+                console.log("Document found for content ID:", contentId);
+                var data = subDoc.data();
+                console.log("Document data:", data);
+
+                if (data.subcontents && Array.isArray(data.subcontents)) {
+                    console.log("Checking subcontents array...");
+
+                    var foundSubcontent = data.subcontents.find(function (subcontent) {
+                        return subcontent.subcontent === subcontentName;
+                    });
+
+                    if (foundSubcontent) {
+                        console.log("Found matching subcontent:", foundSubcontent);
+
+                        if (foundSubcontent.quiz && Array.isArray(foundSubcontent.quiz)) {
+                            console.log("Adding quiz:", foundSubcontent.quiz);
+                            mergedQuestions = mergedQuestions.concat(foundSubcontent.quiz);
+                        } else {
+                            console.warn("No quiz array found for subcontent:", subcontentName);
+                        }
+                    } else {
+                        console.warn("Subcontent not found:", subcontentName);
+                    }
+                } else {
+                    console.warn("No subcontents array in document:", contentId);
                 }
             }).catch(function (error) {
-                console.error("Error fetching quiz:", error);
+                console.error("Error fetching quiz for content ID:", contentId, "Error:", error);
             });
 
             fetchPromises.push(promise);
         });
 
         Promise.all(fetchPromises).then(function () {
+            console.log("All fetches complete. Final merged quiz:", mergedQuestions);
             localStorage.setItem("questions", JSON.stringify(mergedQuestions));
-            console.log("Merged quiz saved to local storage:", mergedQuestions);
-            //getSizeOfObjects(mergedQuestions,"mergedQuestions");
+            console.log("Merged quiz saved to local storage.");
         });
 
-    }).catch(function (error) {
-        console.error("Error fetching user document:", error);
-    });
+
 }
+
+
 // Function to update lastWatchedPath on sign-out
 function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
     var db = firebase.firestore();
@@ -356,13 +342,19 @@ function updateFavoritesOnSignOut() {
         console.error("Error updating favorites:", error);
     });
 }
-
+// Function to shuffle an array (Fisher-Yates shuffle)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+}
 // Update video list
 function updateVideoList(videos) {
     var listContainer = document.querySelector(".list-container");
     listContainer.innerHTML = ""; // Clear existing videos
-
-
+    shuffleArray(videos);
+    localStorage.setItem("videoList", JSON.stringify(videos));
     if (videos != null) {
         videos.forEach(function (video) {
             var videoElement = document.createElement("div");

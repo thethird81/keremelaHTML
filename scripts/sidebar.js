@@ -33,10 +33,6 @@ var firebaseConfig = {
 
 // Fetch Data from Firestore or use cached data from localStorage
 function fetchSubjects() {
-
-
-
-
     // Check if data exists in localStorage
     var cachedData = localStorage.getItem('sidebarData_Grade_'+ grade);
     if (cachedData) {
@@ -99,7 +95,10 @@ function renderSubjects(subjects) {
                 // Add Click Listener to Show Details
                 subContentPara.addEventListener("click", function () {
                     console.log("subcontent =>" + subcontent);
-                    handleSubcontentClick(grade, subject.subject, content.content, subcontent);
+                    //handleSubcontentClick(grade, subject.subject, content.content, subcontent);
+                    var lastWatchedPath = grade + "_" + subject.subject + "_" + content.content + "_" + subcontent;
+                    localStorage.setItem("lastWatchedPath", lastWatchedPath);
+                    handleSidebarClick();
                     var sidebar = document.querySelector(".sidebar");
                     sidebar.classList.toggle("visible");
                 });
@@ -161,11 +160,12 @@ function fetchFavoriteVideos() {
 
 
 // Fetch multiple videos from YouTube API (greater than 3 minutes)
-function fetchYouTubeVideos(query, maxResults, callback) {
+function fetchYouTubeVideos(callback) {
     var API_KEY = 'AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM';
+    var query = getQuery();
    // var URL = "https://youtube.googleapis.com/youtube/v3/search?q=%22Construction%20and%20interpretation%20of%20graphs%22%20grade%2012&part=snippet&key=AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM&videoEmbeddable=true&maxResults=50&type=video";
    var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
-          "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + maxResults +
+          "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + 50 +
           "&type=video&relevanceLanguage=en&order=relevance";
               console.log( encodeURIComponent(query) );
 
@@ -215,7 +215,10 @@ function displayTitle(subcontent) {
         console.log("Element not found.");
     }
 }
-function getQuery(grade, subcontent) {
+function getQuery() {
+    var grade = getSelectedSidebar("grade");
+    var subcontent = getSelectedSidebar("subcontent");
+
     var query = "";
 
     if (grade === 'Pre-KG') {
@@ -250,14 +253,16 @@ function getLastWatchedVideos(){
 
             // Save the fetched videos to localStorage
             localStorage.setItem("videoList", JSON.stringify(videos));
-
             // Redirect to the main page if not already there
             if (window.location.pathname !== "/index.html") {
                 window.location.href = "/index.html";
+            }else{
+                 // Update the video list on the page
+                updateVideoList(videos);
             }
 
-            // Update the video list on the page
-            updateVideoList(videos);
+
+
         }
         else{
             console.log("No last watched videos found");
@@ -266,125 +271,452 @@ function getLastWatchedVideos(){
         console.error("Error fetching subcontent document:", error);
     });
 }
-function handleSubcontentClick(grade, subject, content, subcontent) {
+// function handleSubcontentClick(grade, subject, content, subcontent) {
 
-    var lastWatchedPath = grade + "_" + subject + "_" + content + "_" + subcontent;
-    localStorage.setItem("lastWatchedPath", lastWatchedPath);
-    displayTitle(subcontent);
+//     var lastWatchedPath = grade + "_" + subject + "_" + content + "_" + subcontent;
+//     localStorage.setItem("lastWatchedPath", lastWatchedPath);
+//     displayTitle(subcontent);
 
-    var contentId = grade + "_" + subject + "_" + content;
-    var contentRef = db.collection("contents").doc(contentId);
+//     var contentId = grade + "_" + subject + "_" + content;
+//     var contentRef = db.collection("contents").doc(contentId);
 
-    contentRef.get().then(function (doc) {
-        var subcontents = [];
-        if (doc.exists) {
-            var contentData = doc.data();
-            subcontents = contentData.subcontents || [];
+//     contentRef.get().then(function (doc) {
+//         var subcontents = [];
+//         if (doc.exists) {
+//             var contentData = doc.data();
+//             subcontents = contentData.subcontents || [];
 
-            var subcontentData = subcontents.find(function (item) {
-                return item.subcontent === subcontent;
-            });
+//             var subcontentData = subcontents.find(function (item) {
+//                 return item.subcontent === subcontent;
+//             });
 
-            if (subcontentData && subcontentData.videos) {
-                console.log("Fetching videos from Firestore...");
-                localStorage.setItem("videoList", JSON.stringify(subcontentData.videos));
-                window.location.href = "/index.html";
-                updateVideoList(subcontentData.videos);
-                return;
-            }
-        }
+//             if (subcontentData && subcontentData.videos) {
+//                 console.log("Fetching videos from Firestore...");
+//                 localStorage.setItem("videoList", JSON.stringify(subcontentData.videos));
+//                 window.location.href = "/index.html";
+//                 updateVideoList(subcontentData.videos);
+//                 return;
+//             }
+//         }
 
-        console.log("No videos found, fetching from YouTube...");
-        var query = getQuery(grade, subcontent);
-        console.log("query: " +query);
+//         console.log("No videos found, fetching from YouTube...");
+//         var query = getQuery(grade, subcontent);
+//         console.log("query: " +query);
 
-        fetchYouTubeVideos(query, 50, function (youtubeVideos) {
-            if (youtubeVideos.length > 0) {
-                var videosData = youtubeVideos.map(function (video) {
-                    return {
-                        videoId: video.videoId,
-                        title: video.title,
-                        channelTitle: video.channelTitle,
-                        publishedAt: video.publishedAt,
-                        thumbnails: video.thumbnails,
-                        grade: grade,
-                        subject: subject,
-                        content: content,
-                        subcontent: subcontent
-                    };
-                });
+//         fetchYouTubeVideos(query, 50, function (youtubeVideos) {
+//             if (youtubeVideos.length > 0) {
+//                 var videosData = youtubeVideos.map(function (video) {
+//                     return {
+//                         videoId: video.videoId,
+//                         title: video.title,
+//                         channelTitle: video.channelTitle,
+//                         publishedAt: video.publishedAt,
+//                         thumbnails: video.thumbnails,
+//                         grade: grade,
+//                         subject: subject,
+//                         content: content,
+//                         subcontent: subcontent
+//                     };
+//                 });
 
-                updateFirestore(contentRef, subcontent, videosData);
-            } else {
-                console.log("No suitable YouTube videos found.");
-            }
-        });
-    }).catch(function (error) {
-        console.error("Error fetching content document:", error);
-    });
-}
+//                 updateFirestore(contentRef, subcontent, videosData);
+//             } else {
+//                 console.log("No suitable YouTube videos found.");
+//             }
+//         });
+//     }).catch(function (error) {
+//         console.error("Error fetching content document:", error);
+//     });
+// }
 
-function updateFirestore(contentRef, subcontent, videosData) {
-    console.log("Updating Firestore for: " + contentRef.id);
+function updateFirestore(videosData) {
+    if (!window.db) {
+        console.error("Firestore is not initialized.");
+        return Promise.reject("Firestore instance (db) is required.");
+    }
+
+    var grade = getSelectedSidebar("grade");
+    var subject = getSelectedSidebar("subject");
+    var content = getSelectedSidebar("content");
+    var subcontent = getSelectedSidebar("subcontent");
 
     if (!subcontent) {
-        console.error("Subcontent is undefined! Assigning default value.");
+        console.error("❌ Subcontent is required.");
         return Promise.reject("Subcontent is required.");
     }
 
-    videosData = Object.prototype.toString.call(videosData) === "[object Array]" ? videosData.filter(Boolean) : [];
+    var docId = grade + "_" + subject + "_" + content;
+    var contentRef = db.collection("contents").doc(docId);
 
-    return contentRef.get().then(function (doc) {
-        if (!doc.exists) {
-            console.log("Document does not exist. Creating a new one.");
+    console.log("📡 Updating Firestore for:", contentRef.id);
+
+    return contentRef.get()
+        .then(function (doc) {
+            var subcontents = [];
+
+            if (doc.exists) {
+                subcontents = doc.data().subcontents || [];
+            } else {
+                console.log("Document does not exist. Creating a new one.");
             return contentRef.set({
                 subcontents: [{ subcontent: subcontent, videos: videosData }]
             });
-        }
-
-        var subcontents = doc.data().subcontents || [];
-        var subcontentFound = false;
-
-        // Update the existing subcontent object if found
-        for (var i = 0; i < subcontents.length; i++) {
-            if (subcontents[i].subcontent === subcontent) {
-                subcontentFound = true;
-                subcontents[i].videos = Object.prototype.toString.call(subcontents[i].videos) === "[object Array]" ?
-                    subcontents[i].videos.concat(videosData) : videosData;
-                break;
             }
-        }
 
-        // If subcontent was not found, add a new one
-        if (!subcontentFound) {
-            subcontents.push({ subcontent: subcontent, videos: videosData });
-        }
+            var subcontents = doc.data().subcontents || [];
+            var subcontentFound = false;
 
-        console.log("Saving to Firestore:", JSON.stringify({ subcontents }, null, 2));
+            // Update the existing subcontent object if found
+            for (var i = 0; i < subcontents.length; i++) {
+                if (subcontents[i].subcontent === subcontent) {
+                    subcontentFound = true;
+                    subcontents[i].videos = Object.prototype.toString.call(subcontents[i].videos) === "[object Array]" ?
+                        subcontents[i].videos.concat(videosData) : videosData;
+                    break;
+                }
+            }
 
-        return contentRef.update({ subcontents }).then(function () {
-            console.log("Videos successfully updated in Firestore.");
+            // If subcontent was not found, add a new one
+            if (!subcontentFound) {
+                subcontents.push({ subcontent: subcontent, videos: videosData });
+            }
 
-            // Save to local storage
-            localStorage.setItem("videoList", JSON.stringify(videosData));
+            console.log("Saving to Firestore:", JSON.stringify({ subcontents }, null, 2));
 
-            // Redirect if not on the main page
+            return contentRef.update({ subcontents }).then(function () {
+                console.log("Videos successfully updated in Firestore.");
+
+               // Save the fetched videos to localStorage
+            localStorage.setItem("videoList", JSON.stringify(videos));
+            // Redirect to the main page if not already there
             if (window.location.pathname !== "/index.html") {
                 window.location.href = "/index.html";
+            }else{
+                 // Update the video list on the page
+                updateVideoList(videos);
             }
-
-            // Update the video list on the page
-            updateVideoList(videosData);
+                });
+        })
+        .catch(function (error) {
+            console.error("❌ Error updating Firestore:", error);
+            return Promise.reject(error);
         });
-    }).catch(function (error) {
-        console.error("Error updating Firestore:", error);
-    });
 }
 
 
+// Function to check if a document exists in IndexedDB
+function doesDocumentExist(callback) {
+    var grade = getSelectedSidebar("grade");
+    var subject = getSelectedSidebar("subject");
+    var content = getSelectedSidebar("content");
+    var docId = grade + "_" + subject + "_" + content;
+
+    console.log("🔍 Checking for document:", docId);
+
+    var request = indexedDB.open("MyDatabase", 1); // 🔹 Increase version number
+
+    request.onupgradeneeded = function (event) {
+        var db = event.target.result;
+        console.log("⚡ Upgrading database...");
+
+        // Check and create object store if missing
+        if (!db.objectStoreNames.contains("contents")) {
+            db.createObjectStore("contents", { keyPath: "id" });
+            console.log("✅ Object store 'contents' created.");
+        }
+    };
+
+    request.onsuccess = function (event) {
+        var db = event.target.result;
+
+        // Check if the object store exists
+        if (!db.objectStoreNames.contains("contents")) {
+            console.error("❌ Object store 'contents' not found. Deleting database...");
+            db.close();
+            indexedDB.deleteDatabase("MyDatabase"); // Delete and recreate
+            callback(false);
+            return;
+        }
+
+        var transaction = db.transaction("contents", "readonly"); // 🔹 Use 'readonly'
+        var store = transaction.objectStore("contents");
+
+        var getRequest = store.get(docId);
+
+        getRequest.onsuccess = function() {
+            console.log("🔎 Document found:", getRequest.result);
+            callback(getRequest.result);
+        };
+
+        getRequest.onerror = function(event) {
+            console.log("❌ Error checking IndexedDB:", event.target.error);
+            callback(false);
+        };
+    };
+
+    request.onerror = function(event) {
+        console.log("❌ Error opening IndexedDB:", event.target.error);
+        callback(false);
+    };
+
+
+    request.onerror = function(event) {
+        console.log("Error opening IndexedDB:", event.target.error);
+        callback(null);
+    };
+}
+
+// Function to save Firestore document to IndexedDB
+function saveToIndexedDB(doc) {
+    var request = indexedDB.open("MyDatabase", 2);
+
+    request.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        if (!db.objectStoreNames.contains("contents")) {
+            db.createObjectStore("contents", { keyPath: "id" });
+        }
+    };
+
+    request.onsuccess = function(event) {
+        var db = event.target.result;
+        var transaction = db.transaction(["contents"], "readwrite");
+        var store = transaction.objectStore("contents");
+
+        var putRequest = store.put(doc);
+
+        putRequest.onsuccess = function() {
+            console.log("Document saved to IndexedDB:", doc.id);
+        };
+
+        putRequest.onerror = function(event) {
+            console.log("Error saving document:", event.target.error);
+        };
+    };
+
+    request.onerror = function(event) {
+        console.log("Error opening IndexedDB:", event.target.error);
+    };
+}
+
+// Function to fetch document from Firestore
+function fetchFromFirestore( callback) {
+    console.log(" fetching Firestore document:....");
+    var grade = getSelectedSidebar("grade");
+        var subject = getSelectedSidebar("subject");
+        var content = getSelectedSidebar("content");
+        var docId = grade + "_" + subject + "_" + content;
+    var contentRef = db.collection("contents").doc(docId);
+
+    contentRef.get().then(function(doc) {
+        if (doc.exists) {
+            var data = doc.data();
+            data.id = doc.id; // Ensure ID is part of the object
+            callback(data); // Return Firestore doc
+        } else {
+            callback(null); // Not found in Firestore
+        }
+    }).catch(function(error) {
+        console.log("Error fetching Firestore document:", error);
+        callback(null);
+    });
+}
+
+// Function to fetch videos from YouTube API
+function fetchVideosFromYouTube(callback) {
+    console.log(" fetching youtube document:....");
+    var subcontent = getSelectedSidebar("subcontent") + "for grade 3";
+    var apiKey = "AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM";
+    var query = encodeURIComponent(subcontent);
+    var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
+          "&part=snippet&key=" + apiKey + "&videoEmbeddable=true&maxResults=" + 50 +
+          "&type=video&relevanceLanguage=en&order=relevance";
+
+    fetch(URL)
+        .then(response => response.json())
+        .then(data => {
+            if (data.items) {
+                var videos = data.items.map(item => ({
+                    videoId: item.id.videoId,
+                    title: item.snippet.title,
+                    channelTitle: item.snippet.channelTitle,
+                    publishedAt: item.snippet.publishedAt,
+                    thumbnails: {
+                        default: item.snippet.thumbnails.default.url,
+                        medium: item.snippet.thumbnails.medium.url,
+                        high: item.snippet.thumbnails.high.url
+                    }
+                }));
+                console.log(videos);
+                callback("fetchVideosFromYouTube" + videos);
+            } else {
+                callback([]);
+            }
+        })
+        .catch(error => {
+            console.log("Error fetching from YouTube:", error);
+            callback([]);
+        });
+}
+
+// Function to save new Firestore document
+function saveToFirestore(newData) {
+    var grade = getSelectedSidebar("grade");
+    var subject = getSelectedSidebar("subject");
+    var content = getSelectedSidebar("content");
+    var docId = grade + "_" + subject + "_" + content;
+    db.collection("contents").doc(docId).set(newData)
+        .then(() => console.log("New document saved to Firestore:", docId))
+        .catch(error => console.log("Error saving to Firestore:", error));
+}
+
+// Main function to handle sidebar click
+function handleSidebarClick() {
+fetchFromFirestore
+        var grade = getSelectedSidebar("grade");
+        var subject = getSelectedSidebar("subject");
+        var content = getSelectedSidebar("content");
+        var subcontent = getSelectedSidebar("subcontent");
+
+        var docId = grade + "_" + subject + "_" + content;
+
+    doesDocumentExist( function(indexedDbDoc) {
+        if (indexedDbDoc && doesVideoExist(indexedDbDoc)) {
+
+            getVideosFromDoc(indexedDbDoc);
+            console.log("Loaded from indexedDb:", indexedDbDoc);
+        } else {
+
+            fetchFromFirestore(function(firestoreDoc ) {
+                if (firestoreDoc && doesVideoExist(firestoreDoc)) {
+                    console.log("Loaded from Firestore:", firestoreDoc);
+                    saveToIndexedDB(firestoreDoc);
+                    getVideosFromDoc(firestoreDoc);
+                    console.log("Loaded from firestore:", firestoreDoc);
+                } else {
+                    fetchYouTubeVideos(function (youtubeVideos) {
+                        if (youtubeVideos.length > 0) {
+                            var videosData = youtubeVideos.map(function (video) {
+                                return {
+                                    videoId: video.videoId,
+                                    title: video.title,
+                                    channelTitle: video.channelTitle,
+                                    publishedAt: video.publishedAt,
+                                    thumbnails: video.thumbnails,
+                                    grade: grade,
+                                    subject: subject,
+                                    content: content,
+                                    subcontent: subcontent
+                                };
+                            });
+                            if(!firestoreDoc){
+                                var newDoc = {
+
+                                            grade: grade,
+                                            content: content,
+                                            subject: subject,
+                                            subcontents: [{ subcontent, videosData, quiz: [] }]
+                                        };
+                                        saveToIndexedDB(newDoc);
+                            }else {
+                                console.log("✅ Document exists. Updating existing subcontent...");
+
+                                var subcontents = firestoreDoc.subcontents || [];
+                                var subcontentFound = false;
+
+                                for (var i = 0; i < subcontents.length; i++) {
+                                    if (subcontents[i].subcontent === subcontent) {
+                                        subcontentFound = true;
+
+                                        // Ensure videosData is an array
+                                        if (Object.prototype.toString.call(videosData) !== "[object Array]") {
+                                            console.warn("⚠️ videosData is not an array. Resetting.");
+                                            videosData = [];
+                                        }
+
+                                        if (Object.prototype.toString.call(subcontents[i].videos) !== "[object Array]") {
+                                            subcontents[i].videos = [];
+                                        }
+
+                                        subcontents[i].videos = subcontents[i].videos.concat(videosData);
+                                        break;
+                                    }
+                                }
+
+                                if (!subcontentFound) {
+                                    subcontents.push({ subcontent: subcontent, videos: videosData || [], quiz: [] });
+                                }
+
+                                console.log("📝 Updating IndexedDB with:", JSON.stringify(firestoreDoc, null, 2));
+
+                                saveToIndexedDB(firestoreDoc);
+                            }
+                            updateFirestore(videosData)
+                            // Save the fetched videos to localStorage
+                            localStorage.setItem("videoList", JSON.stringify(videos));
+                            // Redirect to the main page if not already there
+                            if (window.location.pathname !== "/index.html") {
+                                window.location.href = "/index.html";
+                            }else{
+                                // Update the video list on the page
+                                updateVideoList(videos);
+                            }
+                        } else {
+                            console.log("No suitable YouTube videos found.");
+                        }
+                    });
+                    // fetchVideosFromYouTube(function(videos) {
+                    //     var newDoc = {
+                    //         id: docId,
+                    //         grade: grade,
+                    //         content: content,
+                    //         subject: subject,
+                    //         subcontents: [{ subcontent, videos, quiz: [] }]
+                    //     };
+
+                    //     console.log("Fetched from YouTube and saved:", videos);
+                    //     //saveToFirestore(newDoc);
+                    //     updateFirestore(videos)
+                    //     saveToIndexedDB(newDoc);
+                    //    // getVideosFromDoc(newDoc);
+                    //    updateVideoList(videos);
+                    // });
+                }
+            });
+        }
+    });
+}
+
+function getVideosFromDoc(doc) {
+    var clickedSubcontent = getSelectedSidebar("subcontent");
+    if (!doc || !doc.subcontents || !Array.isArray(doc.subcontents)) {
+        console.log("Invalid document structure");
+        updateVideoList([]); // Pass empty array to UI
+        return;
+    }
+
+    var matchingSubcontent = null;
+    for (var i = 0; i < doc.subcontents.length; i++) {
+        if (doc.subcontents[i].subcontent === clickedSubcontent) {
+            matchingSubcontent = doc.subcontents[i];
+            break;
+        }
+    }
+
+    var videos = matchingSubcontent ? matchingSubcontent.videos || [] : [];
+    // Save the fetched videos to localStorage
+    localStorage.setItem("videoList", JSON.stringify(videos));
+    // Redirect to the main page if not already there
+    if (window.location.pathname !== "/index.html") {
+        window.location.href = "/index.html";
+    }else{
+         // Update the video list on the page
+        updateVideoList(videos);
+    }
+}
+
 
 document.addEventListener("DOMContentLoaded", function() {
-
+    getContentSize();
 if(loggedInUserId){
     var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
     var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
@@ -397,7 +729,7 @@ if(loggedInUserId){
     signinSignup.style.display = "none";
     sidebarContent.style.display = "block";
     fetchSubjects();
-    fetchSubcontentsForGrade(grade);
+    //fetchSubcontentsForGrade(grade);
 
       // Search functionality
       var searchBar = document.getElementById("searchBar");
@@ -443,14 +775,13 @@ if(loggedInUserId){
 
             // Save the fetched videos to localStorage
             localStorage.setItem("videoList", JSON.stringify(videos));
-
             // Redirect to the main page if not already there
             if (window.location.pathname !== "/index.html") {
                 window.location.href = "/index.html";
+            }else{
+                 // Update the video list on the page
+                updateVideoList(videos);
             }
-
-            // Update the video list on the page
-            updateVideoList(videos);
         }
         else{
             console.log("No last watched videos found");
@@ -528,7 +859,7 @@ if(loggedInUserId){
 
     // Clear the search bar
     searchBar.value = "";
-handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
+//handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
 
   }
   //=========================== search ==============================
@@ -550,11 +881,174 @@ handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,sub
             console.error("Error fetching subcontents:", error);
         });
 }
-// function getSizeOfObjects(objects,objectName) {
-//     const jsonString = JSON.stringify(objects);
-//     const blob = new Blob([jsonString]);
-//     console.log(objectName);
-//     console.log("Size in bytes:", blob.size);
-//     console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
-//     console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
-// }
+function getSizeOfObjects(objects,objectName) {
+    const jsonString = JSON.stringify(objects);
+    const blob = new Blob([jsonString]);
+    console.log(objectName);
+    console.log("Size in bytes:", blob.size);
+    console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
+    console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
+}
+
+function getContentSize(){
+    var contentRef = db.collection("contents");
+
+contentRef.get().then(function(querySnapshot) {
+    var totalSize = 0;
+
+    querySnapshot.forEach(function(doc) {
+        var fieldStructure = Object.keys(doc.data());
+        var jsonString = JSON.stringify(doc.data()); // Convert document data to JSON string
+        totalSize += jsonString.length; // Approximate size in bytes
+
+    });
+    var totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2); // Convert to MB and round to 2 decimal places
+    console.log("Total size on disk (approx):", totalSizeMB, "MB");
+}).catch(function(error) {
+    console.log("Error getting documents:", error);
+});
+
+}function getSelectedSidebar(key) {
+    var lastWatchedPath = localStorage.getItem("lastWatchedPath");
+
+    if (!lastWatchedPath) {
+        console.log("No last watched path found.");
+        return null;
+    }
+
+    var parts = lastWatchedPath.split("_");
+
+    var keys = ["grade", "subject", "content", "subcontent"];
+    var index = keys.indexOf(key);
+
+    if (index === -1 || index >= parts.length) {
+        console.log("Invalid key or missing value for:", key);
+        return null;
+    }
+
+    return parts[index];
+}
+function doesVideoExist(indexedDbDoc) {
+    var subcontent = getSelectedSidebar("subcontent");
+    console.log("🔍 Checking if videos exist for subcontent:", subcontent);
+    console.log("indexedDbDoc======="+indexedDbDoc);
+    // Validate the document structure
+    if (!indexedDbDoc || !Array.isArray(indexedDbDoc.subcontents)) {
+        console.error("❌ Invalid document structure.");
+        return false;
+    }
+
+    // Early return if no subcontents exist
+    if (indexedDbDoc.subcontents.length === 0) {
+        console.warn("⚠️ No subcontents found.");
+        return false;
+    }
+
+    console.log("📂 Searching through subcontents...");
+    for (var i = 0; i < indexedDbDoc.subcontents.length; i++) {
+        var foundSubcontent = indexedDbDoc.subcontents[i].subcontent;
+        console.log("🔎 Found subcontent:", foundSubcontent);
+
+        if (subcontent === foundSubcontent) {
+            console.log("✅ Matched subcontent:", foundSubcontent);
+
+            // Check if the `videos` array exists and is non-empty
+            var videos = indexedDbDoc.subcontents[i].videos;
+            var hasVideos = Array.isArray(videos) && videos.length > 0;
+            console.log("🎬 videos-----", videos);
+            console.log("🎬 Videos exist?", hasVideos);
+            return hasVideos;
+        }
+    }
+
+    console.warn("🚫 Subcontent not found or has no videos.");
+    return false; // No matching subcontent found or videos array is empty
+}
+
+
+
+//========================== INDEXEDDB =================================
+
+
+function deleteDatabase(dbName, callback) {
+    var request = indexedDB.deleteDatabase(dbName);
+
+    request.onsuccess = function() {
+        console.log("Database '" + dbName + "' deleted successfully.");
+        if (callback) callback(null, true);
+    };
+
+    request.onerror = function(event) {
+        console.error("Error deleting database:", event.target.error);
+        if (callback) callback(event.target.error, false);
+    };
+
+    request.onblocked = function() {
+        console.warn("Database deletion is blocked. Close all open connections.");
+    };
+}
+
+function deleteObjectStore(dbName, storeName, callback) {
+    var request = indexedDB.open(dbName, new Date().getTime()); // Use a higher version to trigger onupgradeneeded
+
+    request.onupgradeneeded = function(event) {
+        var db = event.target.result;
+        if (db.objectStoreNames.contains(storeName)) {
+            db.deleteObjectStore(storeName);
+            console.log("Object store '" + storeName + "' deleted successfully.");
+        } else {
+            console.warn("Object store '" + storeName + "' does not exist.");
+        }
+    };
+
+    request.onsuccess = function(event) {
+        var db = event.target.result;
+        db.close();
+        if (callback) callback(null, true);
+    };
+
+    request.onerror = function(event) {
+        console.error("Error opening database:", event.target.error);
+        if (callback) callback(event.target.error, false);
+    };
+}
+
+function deleteContentFromIndexedDB(dbName, storeName, contentId, callback) {
+    var request = indexedDB.open(dbName);
+
+    request.onerror = function(event) {
+        console.error("Database error:", event.target.error);
+    };
+
+    request.onsuccess = function(event) {
+        var db = event.target.result;
+        var transaction = db.transaction([storeName], "readwrite");
+        var store = transaction.objectStore(storeName);
+        var deleteRequest = store.delete(contentId);
+
+        deleteRequest.onsuccess = function() {
+            console.log("Content deleted successfully");
+            if (callback) callback(null, true);
+        };
+
+        deleteRequest.onerror = function(event) {
+            console.error("Error deleting content:", event.target.error);
+            if (callback) callback(event.target.error, false);
+        };
+    };
+}
+// deleteDatabase("MyDatabase", function(err, success) {
+//     if (success) {
+//         console.log("Database deleted successfully!");
+//     } else {
+//         console.log("Failed to delete database:", err);
+//     }
+// });
+// deleteContentFromIndexedDB("MyDatabase", "contents", "3_Science_Living things", function(err, success) {
+//     if (success) {
+//         console.log("Deletion successful!");
+
+//     } else {
+//         console.log("Deletion failed:", err);
+//     }
+// });
