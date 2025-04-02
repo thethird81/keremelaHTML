@@ -1,14 +1,14 @@
 "use strict";
 if (!Object.values) {
-    Object.values = function(obj) {
-        return Object.keys(obj).map(function(key) {
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function (key) {
             return obj[key];
         });
     };
 }
 
-  // Age List
-  var ageList = ["0-2","3-4","5-7","8-10","11+"];
+// Age List
+var ageList = ["0-2", "3-4", "5-7", "8-10", "11+"];
 
 //   var grade = {
 //      "PreKG": "PreK - Early Years 1",
@@ -47,8 +47,6 @@ function populateDropdown() {
         "12": "Grade 12-Year 13"
     };
 
-
-
     var select = document.getElementById("gradeSelect");
 
     if (!select) {
@@ -57,8 +55,7 @@ function populateDropdown() {
     }
 
     for (var key in grade) {
-
-        if (grade.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(grade, key)) {  // Safely check the property
             var option = document.createElement("option");
             option.value = key;
             option.text = grade[key];
@@ -88,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 // Sign Up functionality
 var signUp = document.getElementById('submitSignUp');
-signUp.addEventListener('click', function(event) {
+signUp.addEventListener('click', function (event) {
     event.preventDefault();
     var email = document.getElementById('rEmail').value;
     var password = document.getElementById('rPassword').value;
@@ -99,11 +96,11 @@ signUp.addEventListener('click', function(event) {
     var db = firebase.firestore();
 
     auth.createUserWithEmailAndPassword(email, password)
-        .then(function(userCredential) {
+        .then(function (userCredential) {
             var user = userCredential.user;
 
             // Send email verification
-            user.sendEmailVerification().then(function() {
+            user.sendEmailVerification().then(function () {
                 showMessage('Verification email sent! Please check your inbox.', 'signUpMessage');
 
                 // Store user data in Firestore
@@ -119,22 +116,22 @@ signUp.addEventListener('click', function(event) {
 
                 var docRef = db.collection("users").doc(user.uid);
                 docRef.set(userData)
-                    .then(function() {
+                    .then(function () {
                         showMessage('Account created! Verify your email before logging in.', 'signUpMessage');
                         auth.signOut(); // Prevent login until email is verified
                         //window.location.href = '/verification-sent.html'; // Redirect to verification page
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.error("Error writing document", error);
                     });
 
-            }).catch(function(error) {
+            }).catch(function (error) {
                 console.error("Error sending verification email:", error);
                 showMessage('Error sending verification email. Try again later.', 'signUpMessage');
             });
 
         })
-        .catch(function(error) {
+        .catch(function (error) {
             var errorCode = error.code;
             if (errorCode === 'auth/email-already-in-use') {
                 showMessage('Email Address Already Exists !!!', 'signUpMessage');
@@ -145,14 +142,14 @@ signUp.addEventListener('click', function(event) {
 });
 
 var signIn = document.getElementById('submitSignIn');
-signIn.addEventListener('click', function(event) {
+signIn.addEventListener('click', function (event) {
     event.preventDefault();
     var email = document.getElementById('email').value;
     var password = document.getElementById('password').value;
     var auth = firebase.auth();
 
     auth.signInWithEmailAndPassword(email, password)
-        .then(function(userCredential) {
+        .then(function (userCredential) {
             var user = userCredential.user;
 
             if (user.emailVerified) {
@@ -160,7 +157,7 @@ signIn.addEventListener('click', function(event) {
                 var db = firebase.firestore();
                 var userRef = db.collection("users").doc(userId);
 
-                userRef.get().then(function(doc) {
+                userRef.get().then(function (doc) {
                     if (doc.exists) {
                         var userData = doc.data();
                         localStorage.setItem('loggedInUserId', userId);
@@ -174,41 +171,36 @@ signIn.addEventListener('click', function(event) {
                         localStorage.setItem("isFirstLogin", "yes");
                         localStorage.setItem("questions", JSON.stringify([]));
 
-
-
                         showMessage('Login successful!', 'signInMessage');
                         window.location.href = '/index.html';
-
                     } else {
                         console.error("No such user document!");
                         showMessage('Error retrieving user data', 'signInMessage');
                     }
-                }).catch(function(error) {
+                }).catch(function (error) {
                     console.error("Error fetching user data:", error);
                     showMessage('Error retrieving user data', 'signInMessage');
                 });
 
             } else {
-                // Show message with a clickable link to resend verification email
-                var resendLink = `<br><a href="#" id="resendVerification">Resend verification email</a>`;
-                showMessage(`Please verify your email before logging in.${resendLink}`, 'signInMessage');
-
                 auth.signOut(); // Prevent unverified users from staying logged in
 
-                // Add event listener to resend verification email
-                document.getElementById('resendVerification').addEventListener('click', function() {
-                    user.sendEmailVerification()
-                        .then(() => {
-                            showMessage('Verification email sent. Check your inbox.', 'signInMessage');
-                        })
-                        .catch(error => {
-                            console.error("Error sending verification email:", error);
-                            showMessage('Failed to send verification email. Try again later.', 'signInMessage');
-                        });
-                });
+                var resendLink = document.getElementById('resendVerification');
+                if (resendLink) {
+                    resendLink.addEventListener('click', function () {
+                        user.sendEmailVerification()
+                            .then(function () {
+                                showMessage('Verification email sent. Check your inbox.', 'signInMessage');
+                            })
+                            .catch(function (error) {
+                                console.error("Error sending verification email:", error);
+                                showMessage('Failed to send verification email. Try again later.', 'signInMessage');
+                            });
+                    });
+                }
             }
         })
-        .catch(function(error) {
+        .catch(function (error) {
             var errorCode = error.code;
             if (errorCode === 'auth/wrong-password') {
                 showMessage('Incorrect Email or Password', 'signInMessage');

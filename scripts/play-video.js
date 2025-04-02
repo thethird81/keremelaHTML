@@ -2,8 +2,8 @@
 
 // Polyfill for Object.values (for older browsers)
 if (!Object.values) {
-    Object.values = function(obj) {
-        return Object.keys(obj).map(function(key) {
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function (key) {
             return obj[key];
         });
     };
@@ -53,61 +53,59 @@ function getNextVideoId() {
 }
 
 function onYouTubeIframeAPIReady() {
+    console.log("YouTube IFrame API is ready!" + videoId);
+    checkFavourited(videoId);
 
-    console.log("YouTube IFrame API is ready!" + videoId );
-    checkFavourited (videoId);
     player = new YT.Player("youtube-player", {
         videoId: videoId,
         playerVars: {
-            'rel': 0, // Disable related videos
-            'autoplay': 1, // Auto-play the video
-            'showinfo': 0, // Optional: Hide video info at the start
-            'modestbranding': 1, // Optional: Limits YouTube branding
-          },
-
-        playerVars: { enablejsapi: 1 },
+            rel: 0, // Disable related videos
+            autoplay: 1, // Auto-play the video
+            showinfo: 0, // Hide video info at the start
+            modestbranding: 1, // Limits YouTube branding
+            enablejsapi: 1 // Enable JavaScript API
+        },
         events: {
             "onReady": onPlayerReady,
             "onStateChange": onPlayerStateChange
         }
     });
-
 }
+
 
 // The API will call this function when the video player is ready.
 function onPlayerReady(event) {
     //update coin
     //check remaining coint
 
-    if(loggedInUserId)
-    {
+    if (loggedInUserId) {
 
         var coinCountElement = document.getElementById("coinCount");
         var selectedSubject = getSelectedPart(1);
-         if (selectedSubject == 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1"){
+        if (selectedSubject == 'Entertainment' && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
 
             var coins = subtructCoins();
-            if(coins < 0 ){
+            if (coins < 0) {
                 showNotEnoughCoinsModal();
                 console.log("Please get more coin!!");
 
-            }else{
-                localStorage.setItem("coins",coins);
+            } else {
+                localStorage.setItem("coins", coins);
                 coinCountElement.textContent = coins;
                 player.playVideo();
                 displayQuestion();
             }
 
 
-         }else{
+        } else {
 
             player.playVideo();
-         }
+        }
 
-     }else{
+    } else {
         player.playVideo();
-     }
     }
+}
 
 
 // The API calls this function when the player's state changes.
@@ -126,65 +124,65 @@ function onPlayerStateChange(event) {
         }
     }
 
-        if (event.data === YT.PlayerState.PLAYING) {
-            if (interval === null && !earnedCoin && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
+    if (event.data === YT.PlayerState.PLAYING) {
+        if (interval === null && !earnedCoin && grade != "KG" && loggedInUserId !== "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
             lastTime = player.getCurrentTime();
 
-            interval = setInterval(function() {
-              var currentTime = player.getCurrentTime();
+            interval = setInterval(function () {
+                var currentTime = player.getCurrentTime();
 
-              // Check if the user skipped
-              if (Math.abs(currentTime - lastTime) > 2) {
-                watchTime = 0; // Reset watch time if skipping detected
-              } else {
-                watchTime += 1; // Increase watch time by 1 second
-              }
-
-              lastTime = currentTime;
-
-              // Check if user watched 5 minutes or reached the end
-              if (!earnedCoin && watchTime >= 240) {
-
-                if(selectedSubject !== "Entertainment"){
-                    addCoins();
-                    earnedCoin = true;
-                    clearInterval(interval);
-                    interval = null;
-                }else{
-                    var coinCountElement = document.getElementById("coinCount");
-                    if (watchTime >= 900 ) {
-                        var coins = subtructCoins();
-                        if(coins > 0 )
-                        {
-                            localStorage.setItem("coins",coins);
-                            coinCountElement.textContent = coins;
-                            watchTime = 0;
-                             // Call the function to play the video
-                        }else{
-                            console.log("add coins");
-                            player.pauseVideo();
-                            earnedCoin = true;
-                            clearInterval(interval);
-                            interval = null;
-                            showNotEnoughCoinsModal();
-                        }
-                    }
-
+                // Check if the user skipped
+                if (Math.abs(currentTime - lastTime) > 2) {
+                    watchTime = 0; // Reset watch time if skipping detected
+                } else {
+                    watchTime += 1; // Increase watch time by 1 second
                 }
 
+                lastTime = currentTime;
+
+                // Check if user watched 5 minutes or reached the end
+                if (!earnedCoin && watchTime >= 240) {
+
+                    if (selectedSubject !== "Entertainment") {
+                        addCoins();
+                        earnedCoin = true;
+                        clearInterval(interval);
+                        interval = null;
+                    } else {
+                        var coinCountElement = document.getElementById("coinCount");
+                        if (watchTime >= 900) {
+                            var coins = subtructCoins();
+                            if (coins > 0) {
+                                localStorage.setItem("coins", coins);
+                                coinCountElement.textContent = coins;
+                                watchTime = 0;
+                                // Call the function to play the video
+                            } else {
+                                console.log("add coins");
+                                player.pauseVideo();
+                                earnedCoin = true;
+                                clearInterval(interval);
+                                interval = null;
+                                showNotEnoughCoinsModal();
+                            }
+                        }
+
+                    }
 
 
 
 
-              }
-              console.log(watchTime);
-            }, 1000);}
-          }   else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-            // Pause counting
-            console.log(" Pause counting");
-            clearInterval(interval);
-            interval = null;
+
+                }
+                console.log(watchTime);
+            }, 1000);
         }
+    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+        // Pause counting
+        console.log(" Pause counting");
+        clearInterval(interval);
+        interval = null;
+    }
 
 
 
@@ -194,24 +192,24 @@ function onPlayerStateChange(event) {
 
 // Handle DOM Content Load
 document.addEventListener("DOMContentLoaded", function () {
-    if(navigator.onLine){
-        var signUpButton=document.getElementById('signUpButton');
-        var signInButton=document.getElementById('signInButton');
-        var signInForm=document.getElementById('signIn');
-        var signUpForm=document.getElementById('signup');
+    if (navigator.onLine) {
+        var signUpButton = document.getElementById('signUpButton');
+        var signInButton = document.getElementById('signInButton');
+        var signInForm = document.getElementById('signIn');
+        var signUpForm = document.getElementById('signup');
         var coinCountElement = document.getElementById("coinCount");
         var coinImgElement = document.getElementById("coinIcon");
         var coinContainer = document.getElementById("coinContainer");
 
 
 
-        signUpButton.addEventListener('click',function(){
-            signInForm.style.display="none";
-            signUpForm.style.display="block";
+        signUpButton.addEventListener('click', function () {
+            signInForm.style.display = "none";
+            signUpForm.style.display = "block";
         })
-        signInButton.addEventListener('click', function(){
-            signInForm.style.display="block";
-            signUpForm.style.display="none";
+        signInButton.addEventListener('click', function () {
+            signInForm.style.display = "block";
+            signUpForm.style.display = "none";
         })
 
         var nickName = localStorage.getItem("nickName");
@@ -227,62 +225,62 @@ document.addEventListener("DOMContentLoaded", function () {
             // Change the user icon to the desired image
             document.getElementById('userIcon').src = '/images/yabran.JPG';
         }
-        if (grade != "KG"){
-            coinContainer.style.display="block";
+        if (grade != "KG") {
+            coinContainer.style.display = "block";
         }
         populateRightSidebar(videoList);
 
 
         /*========================= user side bar=======================*/
 
-   // Add click event listeners for menu items
-   document.getElementById("myProfile").addEventListener('click', function() {
-    console.log("Profile clicked");
-});
+        // Add click event listeners for menu items
+        document.getElementById("myProfile").addEventListener('click', function () {
+            console.log("Profile clicked");
+        });
 
-document.getElementById("settings").addEventListener('click', function() {
-    console.log("Settings clicked");
-});
-document.getElementById("contactUs").addEventListener('click', function() {
-    window.open('/pages/contact-us.html', '_blank');
-    console.log("Contact Us clicked");
-});
+        document.getElementById("settings").addEventListener('click', function () {
+            console.log("Settings clicked");
+        });
+        document.getElementById("contactUs").addEventListener('click', function () {
+            window.open('/pages/contact-us.html', '_blank');
+            console.log("Contact Us clicked");
+        });
 
-document.getElementById("logout").addEventListener('click', function() {
-    var userId = localStorage.getItem('loggedInUserId');
-var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+        document.getElementById("logout").addEventListener('click', function () {
+            var userId = localStorage.getItem('loggedInUserId');
+            var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
-console.log("UserId:", userId);
-console.log("LastWatchedPath:", lastWatchedPath);
+            console.log("UserId:", userId);
+            console.log("LastWatchedPath:", lastWatchedPath);
 
-if (userId ) {
-updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
-    .then(function() {
-        updateFavoritesOnSignOut();
-        // Clear localStorage and sign out after Firestore update completes
-        localStorage.clear();
-        auth.signOut()
-            .then(function() {
-                console.log('User signed out successfully');
-                window.location.href = '/index.html';
-            })
-            .catch(function(error) {
-                console.error('Error signing out:', error);
-            });
-    })
-    .catch(function(error) {
-        console.error("Error during Firestore update:", error);
-    });
-} else {
-console.error("UserId or LastWatchedPath is missing in localStorage.");
-}
-});
+            if (userId) {
+                updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
+                    .then(function () {
+                        updateFavoritesOnSignOut();
+                        // Clear localStorage and sign out after Firestore update completes
+                        localStorage.clear();
+                        auth.signOut()
+                            .then(function () {
+                                console.log('User signed out successfully');
+                                window.location.href = '/index.html';
+                            })
+                            .catch(function (error) {
+                                console.error('Error signing out:', error);
+                            });
+                    })
+                    .catch(function (error) {
+                        console.error("Error during Firestore update:", error);
+                    });
+            } else {
+                console.error("UserId or LastWatchedPath is missing in localStorage.");
+            }
+        });
 
     }
-else{
-    console.log("No internet!!");
-}
-                });
+    else {
+        console.log("No internet!!");
+    }
+});
 
 
 function populateRightSidebar(videoList) {
@@ -385,47 +383,47 @@ function updateLastWatchedPathOnSignOut(userId, lastWatchedPath) {
 
     return userRef.update({
         lastWatchedPath: lastWatchedPath,
-        coins:coins
+        coins: coins
     })
-    .then(function() {
-        console.log("lastWatchedPath updated successfully!");
-    })
-    .catch(function(error) {
-        console.error("Error updating lastWatchedPath: ", error);
-    });
+        .then(function () {
+            console.log("lastWatchedPath updated successfully!");
+        })
+        .catch(function (error) {
+            console.error("Error updating lastWatchedPath: ", error);
+        });
 }
 
 // Sign-out functionality
-signOutButton.addEventListener('click', function() {
+signOutButton.addEventListener('click', function () {
     var userId = localStorage.getItem('loggedInUserId');
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
     console.log("UserId:", userId);
     console.log("LastWatchedPath:", lastWatchedPath);
 
-    if (userId ) {
+    if (userId) {
         updateLastWatchedPathOnSignOut(userId, lastWatchedPath)
-            .then(function() {
+            .then(function () {
                 updateFavoritesOnSignOut();
                 // Clear localStorage and sign out after Firestore update completes
                 localStorage.clear();
                 auth.signOut()
-                    .then(function() {
+                    .then(function () {
                         console.log('User signed out successfully');
                         window.location.href = '/index.html';
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.error('Error signing out:', error);
                     });
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error("Error during Firestore update:", error);
             });
     } else {
         console.error("UserId or LastWatchedPath is missing in localStorage.");
     }
 });
-iframeOverlay.addEventListener('click', function() {
+iframeOverlay.addEventListener('click', function () {
     if (player && typeof player.getPlayerState === 'function') {
         var playerState = player.getPlayerState();
 
@@ -442,7 +440,7 @@ iframeOverlay.addEventListener('click', function() {
 });
 
 // Close sidebar when clicking anywhere outside
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     var userSidebar = document.querySelector(".userSidebar");
     var sidebar = document.querySelector(".sidebar");
     var userIcon = document.getElementById("userIcon");
@@ -452,7 +450,7 @@ document.addEventListener('click', function(event) {
     if (!userSidebar.contains(event.target) && event.target !== userIcon) {
         userSidebar.classList.remove("visible"); // Removes 'visible' class to hide the sidebar
 
-    }else{
+    } else {
         userSidebar.classList.toggle("visible");
         sidebar.classList.remove("visible");
     }
@@ -462,8 +460,8 @@ function displayQuestion() {
     resetQuiz(); // Reset button states
     if (questions) {
         // Generate a random index for selecting a question
-    var randomIndex = Math.floor(Math.random() * questions.length);
-    var question = questions[randomIndex];  // Use the random index to get a question
+        var randomIndex = Math.floor(Math.random() * questions.length);
+        var question = questions[randomIndex];  // Use the random index to get a question
 
         // Display question text
         questionText.innerHTML = question.question;
@@ -502,7 +500,7 @@ function displayQuestion() {
                 optionImage.alt = "Option Image";
                 optionImage.className = "option-image";
                 optionContent.appendChild(optionImage);
-            }else{
+            } else {
                 console.log("image not avail");
             }
 
@@ -527,10 +525,10 @@ function showModal() {
     if (player && player.pauseVideo) {
         player.pauseVideo(); // Pause the video
     }
-//     if (player.contentWindow) {
-//         player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-//     }
- }
+    //     if (player.contentWindow) {
+    //         player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    //     }
+}
 
 function hideModal() {
     modal.classList.remove('active');
@@ -594,9 +592,9 @@ function handleAnswerClick(e) {
 
 /*================================= favourites =========================================*/
 
-favoriteBtn.addEventListener("click", function (){
+favoriteBtn.addEventListener("click", function () {
 
-toggleFavorite();
+    toggleFavorite();
 });
 
 // Function to toggle favorite status using videoId (ES5 compatible)
@@ -632,7 +630,7 @@ function toggleFavorite() {
         }
     }
 
-   // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
+    // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
 
     if (index !== -1) {
         // Remove from favorites
@@ -680,7 +678,7 @@ function updateFavoritesOnSignOut() {
 }
 
 
-function checkFavourited (videoId){
+function checkFavourited(videoId) {
 
     console.log("checkFavourited " + videoId);
     var favorites = JSON.parse(localStorage.getItem('favorites')) || [];
@@ -692,7 +690,7 @@ function checkFavourited (videoId){
         }
     }
 
-   // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
+    // var favoriteBtn = document.getElementById('favoriteBtn'); // Ensure you have a button with this ID
 
     if (index !== -1) {
         if (favoriteBtn) {
@@ -714,63 +712,63 @@ function checkFavourited (videoId){
 //============================ on load ===================
 
 document.addEventListener('DOMContentLoaded', function () {
-var slidingText = document.querySelector(".sliding-text");
-// Get references to necessary elements
-var iframeOverlay = document.getElementById("iframeOverlay");
-var youtubeLogoOverlay = document.querySelector(".youtube-logo-overlay");
-var body = document.body;
-var coinImgElement = document.getElementById("coinIcon");
-var coinCountElement = document.getElementById("coinCount");
-var deleteBtn = document.querySelector(".delete-btn");
-var syncBtn = document.querySelector(".sync-btn");
+    var slidingText = document.querySelector(".sliding-text");
+    // Get references to necessary elements
+    var iframeOverlay = document.getElementById("iframeOverlay");
+    var youtubeLogoOverlay = document.querySelector(".youtube-logo-overlay");
+    var body = document.body;
+    var coinImgElement = document.getElementById("coinIcon");
+    var coinCountElement = document.getElementById("coinCount");
+    var deleteBtn = document.querySelector(".delete-btn");
+    var syncBtn = document.querySelector(".sync-btn");
 
-// Function to toggle full screen mode
-function toggleFullScreen() {
-    // Check if the class is already added
-    if (body.className.indexOf("fullscreen-mode") === -1) {
-        body.className += " fullscreen-mode";  // Add the fullscreen-mode class
-    } else {
-        body.className = body.className.replace(" fullscreen-mode", "");  // Remove it
-    }
-}
-
-// For Modern Browsers
-if (youtubeLogoOverlay.addEventListener) {
-    youtubeLogoOverlay.addEventListener("click", toggleFullScreen);
-}
-// For Older Browsers (IE 8 and below)
-else if (youtubeLogoOverlay.attachEvent) {
-    youtubeLogoOverlay.attachEvent("onclick", toggleFullScreen);
-}
-
-
-var slidingText = document.querySelector(".sliding-text");
-if(loggedInUserId){
-    var coins = localStorage.getItem('coins');
-    coinCountElement.textContent = coins;
-    if(loggedInUserId == "vzTIlWdmgTZTF9zpEygFlcl8yFq1"){
-        deleteBtn.style.display = "block";
-        syncBtn.style.display = "block";
-
-        deleteBtn.addEventListener("click", deleteVideo);
-        syncBtn.addEventListener("click", removeVideoFromFirestore);
+    // Function to toggle full screen mode
+    function toggleFullScreen() {
+        // Check if the class is already added
+        if (body.className.indexOf("fullscreen-mode") === -1) {
+            body.className += " fullscreen-mode";  // Add the fullscreen-mode class
+        } else {
+            body.className = body.className.replace(" fullscreen-mode", "");  // Remove it
+        }
     }
 
-}
-else{
-    joinUs.style.display = "block";
-    slidingText.style.display = "block";
-    coinCountElement.style.display = "none";
-    coinImgElement.style.display = "none";
-    favoriteBtn.style.display = "none";
-    userIcon.style.display = "none";
-    searchBox.style.display = "none";
-    joinUs.addEventListener("click",function(){
-        var sidebar = document.querySelector(".sidebar");
-        sidebar.classList.add("visible");
-    });
+    // For Modern Browsers
+    if (youtubeLogoOverlay.addEventListener) {
+        youtubeLogoOverlay.addEventListener("click", toggleFullScreen);
+    }
+    // For Older Browsers (IE 8 and below)
+    else if (youtubeLogoOverlay.attachEvent) {
+        youtubeLogoOverlay.attachEvent("onclick", toggleFullScreen);
+    }
 
-}
+
+    var slidingText = document.querySelector(".sliding-text");
+    if (loggedInUserId) {
+        var coins = localStorage.getItem('coins');
+        coinCountElement.textContent = coins;
+        if (loggedInUserId == "vzTIlWdmgTZTF9zpEygFlcl8yFq1") {
+            deleteBtn.style.display = "block";
+            syncBtn.style.display = "block";
+
+            deleteBtn.addEventListener("click", deleteVideo);
+            syncBtn.addEventListener("click", removeVideoFromFirestore);
+        }
+
+    }
+    else {
+        joinUs.style.display = "block";
+        slidingText.style.display = "block";
+        coinCountElement.style.display = "none";
+        coinImgElement.style.display = "none";
+        favoriteBtn.style.display = "none";
+        userIcon.style.display = "none";
+        searchBox.style.display = "none";
+        joinUs.addEventListener("click", function () {
+            var sidebar = document.querySelector(".sidebar");
+            sidebar.classList.add("visible");
+        });
+
+    }
 
 });
 
@@ -876,26 +874,26 @@ function showDeleteConfirmationModal(onConfirm) {
 // Example usage:
 function deleteVideo() {
     showDeleteConfirmationModal(function () {
-         //get the current videoId
-    var videoId = localStorage.getItem("videoId");
-    // get the current videoList
-    var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
-    //remove the video and update the rest and save it to local storage
-    localStorage.setItem("videoList", JSON.stringify(removeVideoById(videoList,videoId)));
-    var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
-    populateRightSidebar(videoList) ;
-    console.log(videoList.length);
+        //get the current videoId
+        var videoId = localStorage.getItem("videoId");
+        // get the current videoList
+        var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+        //remove the video and update the rest and save it to local storage
+        localStorage.setItem("videoList", JSON.stringify(removeVideoById(videoList, videoId)));
+        var videoList = JSON.parse(localStorage.getItem("videoList") || "[]");
+        populateRightSidebar(videoList);
+        console.log(videoList.length);
 
-    var nextVideoId = getNextVideoId();
-    if (nextVideoId) {
+        var nextVideoId = getNextVideoId();
+        if (nextVideoId) {
 
-        localStorage.setItem('videoId', nextVideoId.videoId);
-        checkFavourited(nextVideoId.videoId);
-        player.loadVideoById(nextVideoId);
+            localStorage.setItem('videoId', nextVideoId.videoId);
+            checkFavourited(nextVideoId.videoId);
+            player.loadVideoById(nextVideoId);
 
-    } else {
-        console.warn("No next video found.");
-    }
+        } else {
+            console.warn("No next video found.");
+        }
         console.log("Video deleted!");
         // Call your actual delete function here
     });
@@ -929,12 +927,13 @@ function adjustIframeOrientation() {
 
 // Ensure the function runs when the page loads and on resize
 window.addEventListener("resize", adjustIframeOrientation);
-window.addEventListener("load", () => {
+window.addEventListener("load", function () {
     setTimeout(adjustIframeOrientation, 500); // Wait a bit for iframe to load
 });
 
 
-function addCoins(){
+
+function addCoins() {
     var coinCountElement = document.getElementById("coinCount");
     var coins = localStorage.getItem("coins");
     coins = coins ? parseInt(coins, 10) : 0;
@@ -942,7 +941,7 @@ function addCoins(){
     localStorage.setItem("coins", coins);
     coinCountElement.textContent = coins;
 }
-function subtructCoins(){
+function subtructCoins() {
     var coins = localStorage.getItem("coins");
     coins = coins ? parseInt(coins, 10) : 0;
     coins -= 5;
@@ -957,7 +956,7 @@ function showNotEnoughCoinsModal() {
     var modal = document.getElementById("quizModal");
     var overlay = document.getElementById("overlay");
 
-     // Display question image if available
+    // Display question image if available
 
 
 
@@ -985,7 +984,7 @@ function showNotEnoughCoinsModal() {
     goToIndexButton.textContent = "Watch Other Subject!"; // Button text
 
     // Add event listener to the button
-    goToIndexButton.addEventListener("click", function() {
+    goToIndexButton.addEventListener("click", function () {
         window.location.href = "/index.html"; // Redirect to index.html when clicked
 
     });

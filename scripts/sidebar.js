@@ -1,12 +1,12 @@
 "use strict";
 if (!Object.values) {
-    Object.values = function(obj) {
-        return Object.keys(obj).map(function(key) {
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function (key) {
             return obj[key];
         });
     };
 }
-var allSubcontents=[];
+var allSubcontents = [];
 var grade = localStorage.getItem('grade');
 var loggedInUserId = localStorage.getItem('loggedInUserId');
 var sidebarContent = document.getElementById("sidebarContent");
@@ -24,19 +24,19 @@ var firebaseConfig = {
     storageBucket: "keremela-508aa.firebasestorage.app",
     messagingSenderId: "555590069435",
     appId: "1:555590069435:web:1296b444545a84a73c8d9e"
-  };
-  firebase.initializeApp(firebaseConfig);
+};
+firebase.initializeApp(firebaseConfig);
 
-  var db = firebase.firestore();
+var db = firebase.firestore();
 
 
 
 // Fetch Data from Firestore or use cached data from localStorage
 function fetchSubjects() {
     // Check if data exists in localStorage
-    var cachedData = localStorage.getItem('sidebarData_Grade_'+ grade);
+    var cachedData = localStorage.getItem('sidebarData_Grade_' + grade);
     if (cachedData) {
-        console.log("Using cached sidebar data from localStorage" );
+        console.log("Using cached sidebar data from localStorage");
         var data = JSON.parse(cachedData);
         renderSubjects(data.subjects); // Render subjects using cached data
     } else {
@@ -125,23 +125,23 @@ function renderSubjects(subjects) {
         sidebarContent.appendChild(subjectDiv);
     });
 
-    displayFavouriteButton() ;
+    displayFavouriteButton();
 }
 
 
 
 function displayFavouriteButton() {
- // Draw a line separator at the end of the content
- var separator = document.createElement("hr");
- separator.style.margin = "10px 0";
- sidebarContent.appendChild(separator);
+    // Draw a line separator at the end of the content
+    var separator = document.createElement("hr");
+    separator.style.margin = "10px 0";
+    sidebarContent.appendChild(separator);
 
- // Create "Favorite Videos" button
- var favoriteButton = document.createElement("button");
- favoriteButton.textContent = "Show Favorite Videos";
- favoriteButton.classList.add("favorite-videos-btn");
- favoriteButton.addEventListener("click", fetchFavoriteVideos);
- sidebarContent.appendChild(favoriteButton);
+    // Create "Favorite Videos" button
+    var favoriteButton = document.createElement("button");
+    favoriteButton.textContent = "Show Favorite Videos";
+    favoriteButton.classList.add("favorite-videos-btn");
+    favoriteButton.addEventListener("click", fetchFavoriteVideos);
+    sidebarContent.appendChild(favoriteButton);
 
 }
 // Fetch favorite videos from Firestore using collectionGroup
@@ -163,46 +163,46 @@ function fetchFavoriteVideos() {
 function fetchYouTubeVideos(callback) {
     var API_KEY = 'AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM';
     var query = getQuery();
-   // var URL = "https://youtube.googleapis.com/youtube/v3/search?q=%22Construction%20and%20interpretation%20of%20graphs%22%20grade%2012&part=snippet&key=AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM&videoEmbeddable=true&maxResults=50&type=video";
-   var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
-          "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + 50 +
-          "&type=video&relevanceLanguage=en&order=relevance";
-              console.log( encodeURIComponent(query) );
+    // var URL = "https://youtube.googleapis.com/youtube/v3/search?q=%22Construction%20and%20interpretation%20of%20graphs%22%20grade%2012&part=snippet&key=AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM&videoEmbeddable=true&maxResults=50&type=video";
+    var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
+        "&part=snippet&key=" + API_KEY + "&videoEmbeddable=true&maxResults=" + 50 +
+        "&type=video&relevanceLanguage=en&order=relevance";
+    console.log(encodeURIComponent(query));
 
-              var xhr = new XMLHttpRequest();
-              xhr.open("GET", URL, true);
-              xhr.onreadystatechange = function () {
-                  if (xhr.readyState === 4) { // Request is complete
-                      if (xhr.status === 200) { // Successful response
-                          var data = JSON.parse(xhr.responseText);
-                          var videos = [];
-                          if (data.items && data.items.length > 0) {
-                              data.items.forEach(function (item) {
-                                  videos.push({
-                                      videoId: item.id.videoId,
-                                      title: item.snippet.title,
-                                      channelTitle: item.snippet.channelTitle,
-                                      publishedAt: item.snippet.publishedAt,
-                                      thumbnails: {
-                                          default: item.snippet.thumbnails.default.url,
-                                          medium: item.snippet.thumbnails.medium.url,
-                                          high: item.snippet.thumbnails.high.url
-                                      }
-                                  });
-                              });
-                          }
-                          callback(videos);
-                      } else {
-                          console.error("Error fetching YouTube videos:", xhr.statusText);
-                          callback([]);
-                      }
-                  }
-              };
-              xhr.onerror = function () {
-                  console.error("Request failed");
-                  callback([]);
-              };
-              xhr.send();
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", URL, true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) { // Request is complete
+            if (xhr.status === 200) { // Successful response
+                var data = JSON.parse(xhr.responseText);
+                var videos = [];
+                if (data.items && data.items.length > 0) {
+                    data.items.forEach(function (item) {
+                        videos.push({
+                            videoId: item.id.videoId,
+                            title: item.snippet.title,
+                            channelTitle: item.snippet.channelTitle,
+                            publishedAt: item.snippet.publishedAt,
+                            thumbnails: {
+                                default: item.snippet.thumbnails.default.url,
+                                medium: item.snippet.thumbnails.medium.url,
+                                high: item.snippet.thumbnails.high.url
+                            }
+                        });
+                    });
+                }
+                callback(videos);
+            } else {
+                console.error("Error fetching YouTube videos:", xhr.statusText);
+                callback([]);
+            }
+        }
+    };
+    xhr.onerror = function () {
+        console.error("Request failed");
+        callback([]);
+    };
+    xhr.send();
 
 }
 
@@ -222,54 +222,54 @@ function getQuery() {
     var query = "";
 
     if (grade === 'Pre-KG') {
-        query = grade  + " " + subcontent + " toddler educational songs";
+        query = grade + " " + subcontent + " toddler educational songs";
     } else if (grade === 'KG') {
-        query =subcontent + " for toddler";
+        query = subcontent + " for toddler";
     } else if (grade === '3') {
 
-        query = "grade 3 " + subcontent ;
+        query = "grade 3 " + subcontent;
     } else {
 
-        query = "grade " + grade  + " " + subcontent
+        query = "grade " + grade + " " + subcontent
     }
 
     return query;
 }
 
-function getLastWatchedVideos(){
+function getLastWatchedVideos() {
     var lastWatchedPath = localStorage.getItem('lastWatchedPath');
-    var lastWatchedPath = lastWatchedPath.split("_")[0] + "_" + lastWatchedPath.split("_")[3] ;
+    var lastWatchedPath = lastWatchedPath.split("_")[0] + "_" + lastWatchedPath.split("_")[3];
 
-      // Reference to the subcontent document
-      var subcontentRef = db.collection("subcontents")
-      .doc( lastWatchedPath  );
+    // Reference to the subcontent document
+    var subcontentRef = db.collection("subcontents")
+        .doc(lastWatchedPath);
     subcontentRef.get()
-    .then(function (doc) {
-        if (doc.exists && doc.data().videos) {
-            // If videos are already available in the 'videos' field
-            console.log("Fetching videos from subcontent document...");
-            var videos = doc.data().videos;
-            console.log("Fetched Videos:", videos);
+        .then(function (doc) {
+            if (doc.exists && doc.data().videos) {
+                // If videos are already available in the 'videos' field
+                console.log("Fetching videos from subcontent document...");
+                var videos = doc.data().videos;
+                console.log("Fetched Videos:", videos);
 
-            // Save the fetched videos to localStorage
-            localStorage.setItem("videoList", JSON.stringify(videos));
-            // Redirect to the main page if not already there
-            if (window.location.pathname !== "/index.html") {
-                window.location.href = "/index.html";
-            }else{
-                 // Update the video list on the page
-                updateVideoList(videos);
+                // Save the fetched videos to localStorage
+                localStorage.setItem("videoList", JSON.stringify(videos));
+                // Redirect to the main page if not already there
+                if (window.location.pathname !== "/index.html") {
+                    window.location.href = "/index.html";
+                } else {
+                    // Update the video list on the page
+                    updateVideoList(videos);
+                }
+
+
+
             }
-
-
-
-        }
-        else{
-            console.log("No last watched videos found");
-        }
-    }).catch(function (error) {
-        console.error("Error fetching subcontent document:", error);
-    });
+            else {
+                console.log("No last watched videos found");
+            }
+        }).catch(function (error) {
+            console.error("Error fetching subcontent document:", error);
+        });
 }
 // function handleSubcontentClick(grade, subject, content, subcontent) {
 
@@ -358,9 +358,9 @@ function updateFirestore(videosData) {
                 subcontents = doc.data().subcontents || [];
             } else {
                 console.log("Document does not exist. Creating a new one.");
-            return contentRef.set({
-                subcontents: [{ subcontent: subcontent, videos: videosData }]
-            });
+                return contentRef.set({
+                    subcontents: [{ subcontent: subcontent, videos: videosData }]
+                });
             }
 
             var subcontents = doc.data().subcontents || [];
@@ -381,21 +381,21 @@ function updateFirestore(videosData) {
                 subcontents.push({ subcontent: subcontent, videos: videosData });
             }
 
-            console.log("Saving to Firestore:", JSON.stringify({ subcontents }, null, 2));
+            // console.log("Saving to Firestore:", JSON.stringify({ subcontents }, null, 2));
 
-            return contentRef.update({ subcontents }).then(function () {
+            return contentRef.update(subcontents).then(function () {
                 console.log("Videos successfully updated in Firestore.");
 
-               // Save the fetched videos to localStorage
-            localStorage.setItem("videoList", JSON.stringify(videos));
-            // Redirect to the main page if not already there
-            if (window.location.pathname !== "/index.html") {
-                window.location.href = "/index.html";
-            }else{
-                 // Update the video list on the page
-                updateVideoList(videos);
-            }
-                });
+                // Save the fetched videos to localStorage
+                localStorage.setItem("videoList", JSON.stringify(videos));
+                // Redirect to the main page if not already there
+                if (window.location.pathname !== "/index.html") {
+                    window.location.href = "/index.html";
+                } else {
+                    // Update the video list on the page
+                    updateVideoList(videos);
+                }
+            });
         })
         .catch(function (error) {
             console.error("❌ Error updating Firestore:", error);
@@ -443,24 +443,24 @@ function doesDocumentExist(callback) {
 
         var getRequest = store.get(docId);
 
-        getRequest.onsuccess = function() {
+        getRequest.onsuccess = function () {
             console.log("🔎 Document found:", getRequest.result);
             callback(getRequest.result);
         };
 
-        getRequest.onerror = function(event) {
+        getRequest.onerror = function (event) {
             console.log("❌ Error checking IndexedDB:", event.target.error);
             callback(false);
         };
     };
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.log("❌ Error opening IndexedDB:", event.target.error);
         callback(false);
     };
 
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.log("Error opening IndexedDB:", event.target.error);
         callback(null);
     };
@@ -470,44 +470,44 @@ function doesDocumentExist(callback) {
 function saveToIndexedDB(doc) {
     var request = indexedDB.open("MyDatabase", 2);
 
-    request.onupgradeneeded = function(event) {
+    request.onupgradeneeded = function (event) {
         var db = event.target.result;
         if (!db.objectStoreNames.contains("contents")) {
             db.createObjectStore("contents", { keyPath: "id" });
         }
     };
 
-    request.onsuccess = function(event) {
+    request.onsuccess = function (event) {
         var db = event.target.result;
         var transaction = db.transaction(["contents"], "readwrite");
         var store = transaction.objectStore("contents");
 
         var putRequest = store.put(doc);
 
-        putRequest.onsuccess = function() {
+        putRequest.onsuccess = function () {
             console.log("Document saved to IndexedDB:", doc.id);
         };
 
-        putRequest.onerror = function(event) {
+        putRequest.onerror = function (event) {
             console.log("Error saving document:", event.target.error);
         };
     };
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.log("Error opening IndexedDB:", event.target.error);
     };
 }
 
 // Function to fetch document from Firestore
-function fetchFromFirestore( callback) {
+function fetchFromFirestore(callback) {
     console.log(" fetching Firestore document:....");
     var grade = getSelectedSidebar("grade");
-        var subject = getSelectedSidebar("subject");
-        var content = getSelectedSidebar("content");
-        var docId = grade + "_" + subject + "_" + content;
+    var subject = getSelectedSidebar("subject");
+    var content = getSelectedSidebar("content");
+    var docId = grade + "_" + subject + "_" + content;
     var contentRef = db.collection("contents").doc(docId);
 
-    contentRef.get().then(function(doc) {
+    contentRef.get().then(function (doc) {
         if (doc.exists) {
             var data = doc.data();
             data.id = doc.id; // Ensure ID is part of the object
@@ -515,78 +515,81 @@ function fetchFromFirestore( callback) {
         } else {
             callback(null); // Not found in Firestore
         }
-    }).catch(function(error) {
+    }).catch(function (error) {
         console.log("Error fetching Firestore document:", error);
         callback(null);
     });
 }
 
-// Function to fetch videos from YouTube API
-function fetchVideosFromYouTube(callback) {
-    console.log(" fetching youtube document:....");
-    var subcontent = getSelectedSidebar("subcontent") + "for grade 3";
-    var apiKey = "AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM";
-    var query = encodeURIComponent(subcontent);
-    var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
-          "&part=snippet&key=" + apiKey + "&videoEmbeddable=true&maxResults=" + 50 +
-          "&type=video&relevanceLanguage=en&order=relevance";
+// // Function to fetch videos from YouTube API
+// function fetchVideosFromYouTube(callback) {
+//     console.log(" fetching youtube document:....");
+//     var subcontent = getSelectedSidebar("subcontent") + "for grade 3";
+//     var apiKey = "AIzaSyC4t0hI2mQx58U3u5hKS6TiTboPMzaienM";
+//     var query = encodeURIComponent(subcontent);
+//     var URL = "https://youtube.googleapis.com/youtube/v3/search?q=" + encodeURIComponent(query) +
+//           "&part=snippet&key=" + apiKey + "&videoEmbeddable=true&maxResults=" + 50 +
+//           "&type=video&relevanceLanguage=en&order=relevance";
 
-    fetch(URL)
-        .then(response => response.json())
-        .then(data => {
-            if (data.items) {
-                var videos = data.items.map(item => ({
-                    videoId: item.id.videoId,
-                    title: item.snippet.title,
-                    channelTitle: item.snippet.channelTitle,
-                    publishedAt: item.snippet.publishedAt,
-                    thumbnails: {
-                        default: item.snippet.thumbnails.default.url,
-                        medium: item.snippet.thumbnails.medium.url,
-                        high: item.snippet.thumbnails.high.url
-                    }
-                }));
-                console.log(videos);
-                callback("fetchVideosFromYouTube" + videos);
-            } else {
-                callback([]);
-            }
-        })
-        .catch(error => {
-            console.log("Error fetching from YouTube:", error);
-            callback([]);
-        });
-}
+//     fetch(URL)
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.items) {
+//                 var videos = data.items.map(item => ({
+//                     videoId: item.id.videoId,
+//                     title: item.snippet.title,
+//                     channelTitle: item.snippet.channelTitle,
+//                     publishedAt: item.snippet.publishedAt,
+//                     thumbnails: {
+//                         default: item.snippet.thumbnails.default.url,
+//                         medium: item.snippet.thumbnails.medium.url,
+//                         high: item.snippet.thumbnails.high.url
+//                     }
+//                 }));
+//                 console.log(videos);
+//                 callback("fetchVideosFromYouTube" + videos);
+//             } else {
+//                 callback([]);
+//             }
+//         })
+//         .catch(error => {
+//             console.log("Error fetching from YouTube:", error);
+//             callback([]);
+//         });
+// }
 
-// Function to save new Firestore document
+// Function to save new Firestore document (ES5)
 function saveToFirestore(newData) {
     var grade = getSelectedSidebar("grade");
     var subject = getSelectedSidebar("subject");
     var content = getSelectedSidebar("content");
     var docId = grade + "_" + subject + "_" + content;
+
     db.collection("contents").doc(docId).set(newData)
-        .then(() => console.log("New document saved to Firestore:", docId))
-        .catch(error => console.log("Error saving to Firestore:", error));
+        .then(function () {
+            console.log("New document saved to Firestore:", docId);
+        })
+        .catch(function (error) {
+            console.log("Error saving to Firestore:", error);
+        });
 }
 
-// Main function to handle sidebar click
+// Main function to handle sidebar click (ES5)
 function handleSidebarClick() {
-fetchFromFirestore
-        var grade = getSelectedSidebar("grade");
-        var subject = getSelectedSidebar("subject");
-        var content = getSelectedSidebar("content");
-        var subcontent = getSelectedSidebar("subcontent");
+    fetchFromFirestore;
+    var grade = getSelectedSidebar("grade");
+    var subject = getSelectedSidebar("subject");
+    var content = getSelectedSidebar("content");
+    var subcontent = getSelectedSidebar("subcontent");
 
-        var docId = grade + "_" + subject + "_" + content;
+    var docId = grade + "_" + subject + "_" + content;
 
-    doesDocumentExist( function(indexedDbDoc) {
+    doesDocumentExist(function (indexedDbDoc) {
         if (indexedDbDoc && doesVideoExist(indexedDbDoc)) {
-
             getVideosFromDoc(indexedDbDoc);
             console.log("Loaded from indexedDb:", indexedDbDoc);
         } else {
-
-            fetchFromFirestore(function(firestoreDoc ) {
+            fetchFromFirestore(function (firestoreDoc) {
                 if (firestoreDoc && doesVideoExist(firestoreDoc)) {
                     console.log("Loaded from Firestore:", firestoreDoc);
                     saveToIndexedDB(firestoreDoc);
@@ -608,16 +611,20 @@ fetchFromFirestore
                                     subcontent: subcontent
                                 };
                             });
-                            if(!firestoreDoc){
-                                var newDoc = {
 
-                                            grade: grade,
-                                            content: content,
-                                            subject: subject,
-                                            subcontents: [{ subcontent, videosData, quiz: [] }]
-                                        };
-                                        saveToIndexedDB(newDoc);
-                            }else {
+                            if (!firestoreDoc) {
+                                var newDoc = {
+                                    grade: grade,
+                                    content: content,
+                                    subject: subject,
+                                    subcontents: [{
+                                        subcontent: subcontent,
+                                        videos: videosData,
+                                        quiz: []
+                                    }]
+                                };
+                                saveToIndexedDB(newDoc);
+                            } else {
                                 console.log("✅ Document exists. Updating existing subcontent...");
 
                                 var subcontents = firestoreDoc.subcontents || [];
@@ -643,43 +650,33 @@ fetchFromFirestore
                                 }
 
                                 if (!subcontentFound) {
-                                    subcontents.push({ subcontent: subcontent, videos: videosData || [], quiz: [] });
+                                    subcontents.push({
+                                        subcontent: subcontent,
+                                        videos: videosData || [],
+                                        quiz: []
+                                    });
                                 }
 
                                 console.log("📝 Updating IndexedDB with:", JSON.stringify(firestoreDoc, null, 2));
-
                                 saveToIndexedDB(firestoreDoc);
                             }
-                            updateFirestore(videosData)
+
+                            updateFirestore(videosData);
+
                             // Save the fetched videos to localStorage
-                            localStorage.setItem("videoList", JSON.stringify(videos));
+                            localStorage.setItem("videoList", JSON.stringify(videosData));
+
                             // Redirect to the main page if not already there
                             if (window.location.pathname !== "/index.html") {
                                 window.location.href = "/index.html";
-                            }else{
+                            } else {
                                 // Update the video list on the page
-                                updateVideoList(videos);
+                                updateVideoList(videosData);
                             }
                         } else {
                             console.log("No suitable YouTube videos found.");
                         }
                     });
-                    // fetchVideosFromYouTube(function(videos) {
-                    //     var newDoc = {
-                    //         id: docId,
-                    //         grade: grade,
-                    //         content: content,
-                    //         subject: subject,
-                    //         subcontents: [{ subcontent, videos, quiz: [] }]
-                    //     };
-
-                    //     console.log("Fetched from YouTube and saved:", videos);
-                    //     //saveToFirestore(newDoc);
-                    //     updateFirestore(videos)
-                    //     saveToIndexedDB(newDoc);
-                    //    // getVideosFromDoc(newDoc);
-                    //    updateVideoList(videos);
-                    // });
                 }
             });
         }
@@ -708,149 +705,149 @@ function getVideosFromDoc(doc) {
     // Redirect to the main page if not already there
     if (window.location.pathname !== "/index.html") {
         window.location.href = "/index.html";
-    }else{
-         // Update the video list on the page
+    } else {
+        // Update the video list on the page
         updateVideoList(videos);
     }
 }
 
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     getContentSize();
-if(loggedInUserId){
-    var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
-    var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
-    var lastWatchedPath = localStorage.getItem('lastWatchedPath');
+    if (loggedInUserId) {
+        var isIndexPage = window.location.pathname.indexOf("index.html") !== -1 || window.location.pathname === "/";
+        var isFirstLogin = localStorage.getItem("isFirstLogin"); // Check if the user has logged in before
+        var lastWatchedPath = localStorage.getItem('lastWatchedPath');
 
-    console.log("lastWatchedPath  " + lastWatchedPath);
+        console.log("lastWatchedPath  " + lastWatchedPath);
 
 
-    console.log("user logged in sidebar ");
-    signinSignup.style.display = "none";
-    sidebarContent.style.display = "block";
-    fetchSubjects();
-    //fetchSubcontentsForGrade(grade);
+        console.log("user logged in sidebar ");
+        signinSignup.style.display = "none";
+        sidebarContent.style.display = "block";
+        fetchSubjects();
+        //fetchSubcontentsForGrade(grade);
 
-      // Search functionality
-      var searchBar = document.getElementById("searchBar");
-      var searchResults = document.getElementById("searchResults");
-      var resultsList = document.getElementById("resultsList");
+        // Search functionality
+        var searchBar = document.getElementById("searchBar");
+        var searchResults = document.getElementById("searchResults");
+        var resultsList = document.getElementById("resultsList");
 
-      searchBar.addEventListener("input", function (event) {
-        var searchQuery = event.target.value.toLowerCase(); // Get the search query
+        searchBar.addEventListener("input", function (event) {
+            var searchQuery = event.target.value.toLowerCase(); // Get the search query
 
-        if (searchQuery === "") {
-          searchResults.style.display = "none"; // Hide results if search bar is empty
-          return;
-        }
+            if (searchQuery === "") {
+                searchResults.style.display = "none"; // Hide results if search bar is empty
+                return;
+            }
 
-        // Filter subcontents by name
-        var filteredSubcontents = allSubcontents.filter(function (subcontent) {
-          return subcontent.subcontent.toLowerCase().includes(searchQuery);
+            // Filter subcontents by name
+            var filteredSubcontents = allSubcontents.filter(function (subcontent) {
+                return subcontent.subcontent.toLowerCase().includes(searchQuery);
+            });
+
+            // Display the filtered results
+            displaySearchResults(filteredSubcontents);
         });
 
-        // Display the filtered results
-        displaySearchResults(filteredSubcontents);
-      });
-
-      if (isIndexPage && isFirstLogin== "yes") {
+        if (isIndexPage && isFirstLogin == "yes") {
 
 
-        if ( lastWatchedPath != "" ){
-            // var lastWatchedPathParts = lastWatchedPath.split("/");
-            // handleSubcontentClick(lastWatchedPathParts[0], lastWatchedPathParts[1], lastWatchedPathParts[2], lastWatchedPathParts[3]);
+            if (lastWatchedPath != "") {
+                // var lastWatchedPathParts = lastWatchedPath.split("/");
+                // handleSubcontentClick(lastWatchedPathParts[0], lastWatchedPathParts[1], lastWatchedPathParts[2], lastWatchedPathParts[3]);
 
-            getLastWatchedVideos();
-        }else{
-             // Reference to the subcontent document
-      var subcontentRef = db.collection("subcontents")
-      .doc( "3_2D shapes and tessellation"  );
-    subcontentRef.get()
-    .then(function (doc) {
-        if (doc.exists && doc.data().videos) {
-            // If videos are already available in the 'videos' field
-            console.log("Fetching videos from subcontent document...");
-            var videos = doc.data().videos;
-            console.log("Fetched Videos:", videos);
+                getLastWatchedVideos();
+            } else {
+                // Reference to the subcontent document
+                var subcontentRef = db.collection("subcontents")
+                    .doc("3_2D shapes and tessellation");
+                subcontentRef.get()
+                    .then(function (doc) {
+                        if (doc.exists && doc.data().videos) {
+                            // If videos are already available in the 'videos' field
+                            console.log("Fetching videos from subcontent document...");
+                            var videos = doc.data().videos;
+                            console.log("Fetched Videos:", videos);
 
-            // Save the fetched videos to localStorage
-            localStorage.setItem("videoList", JSON.stringify(videos));
-            // Redirect to the main page if not already there
-            if (window.location.pathname !== "/index.html") {
-                window.location.href = "/index.html";
-            }else{
-                 // Update the video list on the page
-                updateVideoList(videos);
+                            // Save the fetched videos to localStorage
+                            localStorage.setItem("videoList", JSON.stringify(videos));
+                            // Redirect to the main page if not already there
+                            if (window.location.pathname !== "/index.html") {
+                                window.location.href = "/index.html";
+                            } else {
+                                // Update the video list on the page
+                                updateVideoList(videos);
+                            }
+                        }
+                        else {
+                            console.log("No last watched videos found");
+                        }
+                    }).catch(function (error) {
+                        console.error("Error fetching subcontent document:", error);
+                    });
             }
-        }
-        else{
-            console.log("No last watched videos found");
-        }
-    }).catch(function (error) {
-        console.error("Error fetching subcontent document:", error);
-    });
-        }
-        // Mark that the user has logged in before
-        localStorage.setItem("isFirstLogin", "no");
+            // Mark that the user has logged in before
+            localStorage.setItem("isFirstLogin", "no");
 
+        }
+
+    } else {
+        sidebarContent.style.display = "none";
+        console.log("no user logged in sidebar ");
+        signinSignup.style.display = "block"
     }
-
-}else{
-    sidebarContent.style.display = "none";
-    console.log("no user logged in sidebar ");
-    signinSignup.style.display = "block"
-}
 });
-  // Toggle the sidebar visibility when the menu icon is clicked
+// Toggle the sidebar visibility when the menu icon is clicked
 
-  menuIcon.addEventListener("click", function() {
+menuIcon.addEventListener("click", function () {
 
-    if(sidebarContent){
+    if (sidebarContent) {
         var sidebar = document.querySelector(".sidebar");
         sidebar.classList.toggle("visible");
     }
-    else{
+    else {
         fetchSubjects();
         var sidebar = document.querySelector(".sidebar");
         sidebar.classList.toggle("visible");
     }
 
-  });
+});
 
 
- // Display search results
- function displaySearchResults(subcontents) {
+// Display search results
+function displaySearchResults(subcontents) {
     // Clear previous results
     resultsList.innerHTML = "";
 
     if (subcontents.length === 0) {
-      resultsList.innerHTML = "<li>No results found.</li>";
-      searchResults.style.display = "block"; // Show results dropdown
-      return;
+        resultsList.innerHTML = "<li>No results found.</li>";
+        searchResults.style.display = "block"; // Show results dropdown
+        return;
     }
 
     // Render each subcontent
     subcontents.forEach(function (subcontent) {
-      var listItem = document.createElement("li");
-      listItem.textContent = subcontent.subcontent;
+        var listItem = document.createElement("li");
+        listItem.textContent = subcontent.subcontent;
 
-      // Store the full path in a data attribute
-      listItem.setAttribute("data-path", subcontent.path);
+        // Store the full path in a data attribute
+        listItem.setAttribute("data-path", subcontent.path);
 
-      // Add click listener to handle subcontent selection
-      listItem.addEventListener("click", function () {
-        handleSubcontentSelection(subcontent);
-      });
+        // Add click listener to handle subcontent selection
+        listItem.addEventListener("click", function () {
+            handleSubcontentSelection(subcontent);
+        });
 
-      resultsList.appendChild(listItem);
+        resultsList.appendChild(listItem);
     });
 
     // Show results dropdown
     searchResults.style.display = "block";
-  }
+}
 
-  // Handle subcontent selection
-  function handleSubcontentSelection(subcontent) {
+// Handle subcontent selection
+function handleSubcontentSelection(subcontent) {
     console.log("Subcontent selected:", subcontent.grade);
 
 
@@ -859,11 +856,11 @@ if(loggedInUserId){
 
     // Clear the search bar
     searchBar.value = "";
-//handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
+    //handleSubcontentClick(subcontent.grade,subcontent.subject,subcontent.content,subcontent.subcontent);
 
-  }
-  //=========================== search ==============================
-  function fetchSubcontentsForGrade(grade) {
+}
+//=========================== search ==============================
+function fetchSubcontentsForGrade(grade) {
     return db.collection("subcontents")
         .where("grade", "==", grade) // Filter by grade
         .get()
@@ -881,34 +878,34 @@ if(loggedInUserId){
             console.error("Error fetching subcontents:", error);
         });
 }
-function getSizeOfObjects(objects,objectName) {
-    const jsonString = JSON.stringify(objects);
-    const blob = new Blob([jsonString]);
+function getSizeOfObjects(objects, objectName) {
+    var jsonString = JSON.stringify(objects);
+    var blob = new Blob([jsonString]);
     console.log(objectName);
     console.log("Size in bytes:", blob.size);
     console.log("Size in KB:", (blob.size / 1024).toFixed(2) + " KB");
     console.log("Size in MB:", (blob.size / (1024 * 1024)).toFixed(2) + " MB");
 }
 
-function getContentSize(){
+function getContentSize() {
     var contentRef = db.collection("contents");
 
-contentRef.get().then(function(querySnapshot) {
-    var totalSize = 0;
+    contentRef.get().then(function (querySnapshot) {
+        var totalSize = 0;
 
-    querySnapshot.forEach(function(doc) {
-        var fieldStructure = Object.keys(doc.data());
-        var jsonString = JSON.stringify(doc.data()); // Convert document data to JSON string
-        totalSize += jsonString.length; // Approximate size in bytes
+        querySnapshot.forEach(function (doc) {
+            var fieldStructure = Object.keys(doc.data());
+            var jsonString = JSON.stringify(doc.data()); // Convert document data to JSON string
+            totalSize += jsonString.length; // Approximate size in bytes
 
+        });
+        var totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2); // Convert to MB and round to 2 decimal places
+        console.log("Total size on disk (approx):", totalSizeMB, "MB");
+    }).catch(function (error) {
+        console.log("Error getting documents:", error);
     });
-    var totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2); // Convert to MB and round to 2 decimal places
-    console.log("Total size on disk (approx):", totalSizeMB, "MB");
-}).catch(function(error) {
-    console.log("Error getting documents:", error);
-});
 
-}function getSelectedSidebar(key) {
+} function getSelectedSidebar(key) {
     var lastWatchedPath = localStorage.getItem("lastWatchedPath");
 
     if (!lastWatchedPath) {
@@ -931,7 +928,7 @@ contentRef.get().then(function(querySnapshot) {
 function doesVideoExist(indexedDbDoc) {
     var subcontent = getSelectedSidebar("subcontent");
     console.log("🔍 Checking if videos exist for subcontent:", subcontent);
-    console.log("indexedDbDoc======="+indexedDbDoc);
+    console.log("indexedDbDoc=======" + indexedDbDoc);
     // Validate the document structure
     if (!indexedDbDoc || !Array.isArray(indexedDbDoc.subcontents)) {
         console.error("❌ Invalid document structure.");
@@ -973,17 +970,17 @@ function doesVideoExist(indexedDbDoc) {
 function deleteDatabase(dbName, callback) {
     var request = indexedDB.deleteDatabase(dbName);
 
-    request.onsuccess = function() {
+    request.onsuccess = function () {
         console.log("Database '" + dbName + "' deleted successfully.");
         if (callback) callback(null, true);
     };
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.error("Error deleting database:", event.target.error);
         if (callback) callback(event.target.error, false);
     };
 
-    request.onblocked = function() {
+    request.onblocked = function () {
         console.warn("Database deletion is blocked. Close all open connections.");
     };
 }
@@ -991,7 +988,7 @@ function deleteDatabase(dbName, callback) {
 function deleteObjectStore(dbName, storeName, callback) {
     var request = indexedDB.open(dbName, new Date().getTime()); // Use a higher version to trigger onupgradeneeded
 
-    request.onupgradeneeded = function(event) {
+    request.onupgradeneeded = function (event) {
         var db = event.target.result;
         if (db.objectStoreNames.contains(storeName)) {
             db.deleteObjectStore(storeName);
@@ -1001,13 +998,13 @@ function deleteObjectStore(dbName, storeName, callback) {
         }
     };
 
-    request.onsuccess = function(event) {
+    request.onsuccess = function (event) {
         var db = event.target.result;
         db.close();
         if (callback) callback(null, true);
     };
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.error("Error opening database:", event.target.error);
         if (callback) callback(event.target.error, false);
     };
@@ -1016,22 +1013,22 @@ function deleteObjectStore(dbName, storeName, callback) {
 function deleteContentFromIndexedDB(dbName, storeName, contentId, callback) {
     var request = indexedDB.open(dbName);
 
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         console.error("Database error:", event.target.error);
     };
 
-    request.onsuccess = function(event) {
+    request.onsuccess = function (event) {
         var db = event.target.result;
         var transaction = db.transaction([storeName], "readwrite");
         var store = transaction.objectStore(storeName);
         var deleteRequest = store.delete(contentId);
 
-        deleteRequest.onsuccess = function() {
+        deleteRequest.onsuccess = function () {
             console.log("Content deleted successfully");
             if (callback) callback(null, true);
         };
 
-        deleteRequest.onerror = function(event) {
+        deleteRequest.onerror = function (event) {
             console.error("Error deleting content:", event.target.error);
             if (callback) callback(event.target.error, false);
         };
